@@ -1,0 +1,262 @@
+{
+  "id": -1,
+  "name": "RELEASE-{{combination.pipelineName}}",
+  "type": 1,
+  "quality": 1,
+  "path": "\\",
+  "createdOn": "{{generatedAt}}",
+  "project": {
+    "name": "{{config.adoProjectName}}"
+  },
+  "variables": {
+    "appServiceName": {
+      "value": "{{appServiceName}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "deploymentPath": {
+      "value": "{{combination.deploymentPath}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "mfeName": {
+      "value": "{{config.mfeName}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "serviceConnectionId": {
+      "value": "{{config.serviceConnectionId}}",
+      "allowOverride": false,
+      "isSecret": false
+    }
+  },
+  "variableGroups": [],
+  "environments": [
+    {
+      "id": 1,
+      "name": "{{combination.environment}}",
+      "rank": 1,
+      "owner": {
+        "displayName": "PipeForge"
+      },
+      "variables": {},
+      "variableGroups": [],
+      "preDeployApprovals": {
+        "approvals": [
+          {
+            "rank": 1,
+            "isAutomated": true,
+            "isNotificationOn": false
+          }
+        ],
+        "approvalOptions": {
+          "requiredApproverCount": null,
+          "releaseCreatorCanBeApprover": false,
+          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+          "enforceIdentityRevalidation": false,
+          "timeoutInMinutes": 0,
+          "executionOrder": 1
+        }
+      },
+      "postDeployApprovals": {
+        "approvals": [
+          {
+            "rank": 1,
+            "isAutomated": true,
+            "isNotificationOn": false
+          }
+        ],
+        "approvalOptions": {
+          "requiredApproverCount": null,
+          "releaseCreatorCanBeApprover": false,
+          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+          "enforceIdentityRevalidation": false,
+          "timeoutInMinutes": 0,
+          "executionOrder": 2
+        }
+      },
+      "deployPhases": [
+        {
+          "deploymentInput": {
+            "parallelExecution": {
+              "parallelExecutionType": 0
+            },
+            "agentSpecification": {
+              "identifier": "ubuntu-latest"
+            },
+            "skipArtifactsDownload": false,
+            "artifactsDownloadInput": {
+              "downloadInputs": [
+                {
+                  "artifactItems": [],
+                  "alias": "{{combination.artifactAlias}}",
+                  "artifactType": "Build",
+                  "artifactDownloadMode": "All"
+                }
+              ]
+            },
+            "queueId": 0,
+            "demands": [],
+            "enableAccessToken": false,
+            "timeoutInMinutes": 0,
+            "jobCancelTimeoutInMinutes": 1,
+            "condition": "succeeded()",
+            "overrideInputs": {}
+          },
+          "rank": 1,
+          "phaseType": 1,
+          "name": "Agent job",
+          "refName": "Job_1",
+          "workflowTasks": [
+
+            {{! ── Task 1: AzureRmWebAppDeployment@4 ── }}
+            {
+              "taskId": "497d490f-eea7-4f2b-ab94-48d9c1acdcb1",
+              "version": "4.*",
+              "name": "Azure App Service Deploy — {{combination.pipelineName}}",
+              "refName": "AzureRmWebAppDeployment",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "ConnectionType": "AzureRM",
+                "ConnectedServiceName": "{{config.serviceConnectionId}}",
+                "PublishProfilePath": "$(System.DefaultWorkingDirectory)/**/*.pubxml",
+                "PublishProfilePassword": "",
+                "WebAppKind": "webApp",
+                "WebAppName": "$(appServiceName)",
+                "DeployToSlotOrASEFlag": "false",
+                "ResourceGroupName": "",
+                "SlotName": "production",
+                "VirtualApplication": "",
+                "Package": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}/**/*.zip",
+                "packageForLinux": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}/**/*.zip",
+                "RuntimeStack": "",
+                "StartupCommand": "",
+                "ScriptType": "",
+                "InlineScript": ":: You can provide your deployment commands here. One command per line.",
+                "WebConfigParameters": "",
+                "AppSettings": "",
+                "ConfigurationSettings": "",
+                "enableCustomDeployment": "false",
+                "DeploymentType": "webDeploy",
+                "TakeAppOfflineFlag": "true",
+                "UseWebDeploy": "false",
+                "ExcludeFilesFromAppDataFlag": "true",
+                "AdditionalArguments": "-retryAttempts:6 -retryInterval:10000",
+                "RenameFilesFlag": "true",
+                "RemoveAdditionalFilesFlag": "false",
+                "enableXmlTransform": "false",
+                "enableXmlVariableSubstitution": "false",
+                "JSONFiles": ""
+              }
+            }{{#if config.triggerPipelineAfterDeploy}},
+
+            {{! ── Task 2 (conditional): Trigger downstream pipeline ── }}
+            {
+              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
+              "version": "0.*",
+              "name": "Trigger downstream pipeline",
+              "refName": "TriggerDownstreamPipeline",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "waitForCompletion": "false",
+                "buildDefinition": "{{config.triggerPipelineId}}",
+                "queueBuildForUserThatTriggeredBuild": "true",
+                "ignoreSslCertificateErrors": "false",
+                "useSameSourceVersion": "false",
+                "useCustomSourceVersion": "false",
+                "buildParameters": "",
+                "storeInEnvironment": "false",
+                "authenticationMethod": "OAuth Token",
+                "password": "$(System.AccessToken)",
+                "enableSecureParameters": "false"
+              }
+            }{{/if}}
+
+          ]
+        }
+      ],
+      "environmentOptions": {
+        "emailNotificationType": "OnlyOnFailure",
+        "emailRecipients": "release.environment.owner;release.creator",
+        "skipArtifactsDownload": false,
+        "timeoutInMinutes": 0,
+        "enableAccessToken": false,
+        "publishDeploymentStatus": true,
+        "badgeEnabled": false,
+        "autoLinkWorkItems": false,
+        "pullRequestDeploymentEnabled": false
+      },
+      "demands": [],
+      "conditions": [
+        {
+          "name": "{{combination.artifactAlias}}",
+          "conditionType": 8,
+          "value": ""
+        }
+      ],
+      "executionPolicy": {
+        "concurrencyCount": 1,
+        "queueDepthCount": 0
+      },
+      "schedules": [],
+      "retentionPolicy": {
+        "daysToKeep": 30,
+        "releasesToKeep": 3,
+        "retainBuild": true
+      },
+      "processParameters": {},
+      "properties": {}
+    }
+  ],
+  "artifacts": [
+    {
+      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "type": "Build",
+      "alias": "{{combination.artifactAlias}}",
+      "definitionReference": {
+        "artifactSourceDefinitionUrl": {
+          "id": "",
+          "name": ""
+        },
+        "defaultVersionType": {
+          "id": "latestType",
+          "name": "Latest"
+        },
+        "definition": {
+          "id": "",
+          "name": "{{combination.pipelineName}}"
+        },
+        "project": {
+          "id": "",
+          "name": "{{config.adoProjectName}}"
+        }
+      },
+      "isPrimary": true,
+      "isRetained": false
+    }
+  ],
+  "triggers": [
+    {
+      "artifactAlias": "{{combination.artifactAlias}}",
+      "triggerConditions": [],
+      "triggerType": 1
+    }
+  ],
+  "releaseNameFormat": "Release-$(rev:r)",
+  "tags": [],
+  "properties": {}
+}

@@ -1,0 +1,256 @@
+{
+  "id": -1,
+  "name": "RELEASE-{{combination.pipelineName}}",
+  "type": 1,
+  "quality": 1,
+  "path": "\\",
+  "createdOn": "{{generatedAt}}",
+  "project": {
+    "name": "{{config.adoProjectName}}"
+  },
+  "variables": {
+    "swaDeploymentToken": {
+      "value": "{{swaDeploymentToken}}",
+      "allowOverride": false,
+      "isSecret": true
+    },
+    "deploymentPath": {
+      "value": "{{combination.deploymentPath}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "mfeName": {
+      "value": "{{config.mfeName}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "serviceConnectionId": {
+      "value": "{{config.serviceConnectionId}}",
+      "allowOverride": false,
+      "isSecret": false
+    }
+  },
+  "variableGroups": [],
+  "environments": [
+    {
+      "id": 1,
+      "name": "{{combination.environment}}",
+      "rank": 1,
+      "owner": {
+        "displayName": "PipeForge"
+      },
+      "variables": {},
+      "variableGroups": [],
+      "preDeployApprovals": {
+        "approvals": [
+          {
+            "rank": 1,
+            "isAutomated": true,
+            "isNotificationOn": false
+          }
+        ],
+        "approvalOptions": {
+          "requiredApproverCount": null,
+          "releaseCreatorCanBeApprover": false,
+          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+          "enforceIdentityRevalidation": false,
+          "timeoutInMinutes": 0,
+          "executionOrder": 1
+        }
+      },
+      "postDeployApprovals": {
+        "approvals": [
+          {
+            "rank": 1,
+            "isAutomated": true,
+            "isNotificationOn": false
+          }
+        ],
+        "approvalOptions": {
+          "requiredApproverCount": null,
+          "releaseCreatorCanBeApprover": false,
+          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
+          "enforceIdentityRevalidation": false,
+          "timeoutInMinutes": 0,
+          "executionOrder": 2
+        }
+      },
+      "deployPhases": [
+        {
+          "deploymentInput": {
+            "parallelExecution": {
+              "parallelExecutionType": 0
+            },
+            "agentSpecification": {
+              "identifier": "ubuntu-latest"
+            },
+            "skipArtifactsDownload": false,
+            "artifactsDownloadInput": {
+              "downloadInputs": [
+                {
+                  "artifactItems": [],
+                  "alias": "{{combination.artifactAlias}}",
+                  "artifactType": "Build",
+                  "artifactDownloadMode": "All"
+                }
+              ]
+            },
+            "queueId": 0,
+            "demands": [],
+            "enableAccessToken": false,
+            "timeoutInMinutes": 0,
+            "jobCancelTimeoutInMinutes": 1,
+            "condition": "succeeded()",
+            "overrideInputs": {}
+          },
+          "rank": 1,
+          "phaseType": 1,
+          "name": "Agent job",
+          "refName": "Job_1",
+          "workflowTasks": [
+
+            {{! ── Task 1: Install SWA CLI ── }}
+            {
+              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "version": "2.*",
+              "name": "Install @azure/static-web-apps-cli",
+              "refName": "InstallSwaCli",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "script": "npm install -g @azure/static-web-apps-cli",
+                "workingDirectory": "",
+                "failOnStderr": "false"
+              }
+            },
+
+            {{! ── Task 2: Deploy to Static Web App ── }}
+            {
+              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "version": "2.*",
+              "name": "SWA Deploy — {{combination.pipelineName}}",
+              "refName": "SWA_Deploy",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "script": "swa deploy . --deployment-token $(swaDeploymentToken) --env {{combination.environment}} --no-use-keychain",
+                "workingDirectory": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
+                "failOnStderr": "false"
+              }
+            }{{#if config.triggerPipelineAfterDeploy}},
+
+            {{! ── Task 3 (conditional): Trigger downstream pipeline ── }}
+            {
+              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
+              "version": "0.*",
+              "name": "Trigger downstream pipeline",
+              "refName": "TriggerDownstreamPipeline",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "waitForCompletion": "false",
+                "buildDefinition": "{{config.triggerPipelineId}}",
+                "queueBuildForUserThatTriggeredBuild": "true",
+                "ignoreSslCertificateErrors": "false",
+                "useSameSourceVersion": "false",
+                "useCustomSourceVersion": "false",
+                "buildParameters": "",
+                "storeInEnvironment": "false",
+                "authenticationMethod": "OAuth Token",
+                "password": "$(System.AccessToken)",
+                "enableSecureParameters": "false"
+              }
+            }{{/if}}
+
+          ]
+        }
+      ],
+      "environmentOptions": {
+        "emailNotificationType": "OnlyOnFailure",
+        "emailRecipients": "release.environment.owner;release.creator",
+        "skipArtifactsDownload": false,
+        "timeoutInMinutes": 0,
+        "enableAccessToken": false,
+        "publishDeploymentStatus": true,
+        "badgeEnabled": false,
+        "autoLinkWorkItems": false,
+        "pullRequestDeploymentEnabled": false
+      },
+      "demands": [],
+      "conditions": [
+        {
+          "name": "{{combination.artifactAlias}}",
+          "conditionType": 8,
+          "value": ""
+        }
+      ],
+      "executionPolicy": {
+        "concurrencyCount": 1,
+        "queueDepthCount": 0
+      },
+      "schedules": [],
+      "retentionPolicy": {
+        "daysToKeep": 30,
+        "releasesToKeep": 3,
+        "retainBuild": true
+      },
+      "processParameters": {},
+      "properties": {}
+    }
+  ],
+  "artifacts": [
+    {
+      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "type": "Build",
+      "alias": "{{combination.artifactAlias}}",
+      "definitionReference": {
+        "artifactSourceDefinitionUrl": {
+          "id": "",
+          "name": ""
+        },
+        "defaultVersionType": {
+          "id": "latestType",
+          "name": "Latest"
+        },
+        "definition": {
+          "id": "",
+          "name": "{{combination.pipelineName}}"
+        },
+        "project": {
+          "id": "",
+          "name": "{{config.adoProjectName}}"
+        }
+      },
+      "isPrimary": true,
+      "isRetained": false
+    }
+  ],
+  "triggers": [
+    {
+      "artifactAlias": "{{combination.artifactAlias}}",
+      "triggerConditions": [],
+      "triggerType": 1
+    }
+  ],
+  "releaseNameFormat": "Release-$(rev:r)",
+  "tags": [],
+  "properties": {}
+}

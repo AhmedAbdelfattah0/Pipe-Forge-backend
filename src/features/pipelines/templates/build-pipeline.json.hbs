@@ -1,0 +1,198 @@
+{
+  "id": -1,
+  "name": "{{combination.pipelineName}}",
+  "type": 2,
+  "quality": 1,
+  "path": "\\",
+  "project": {
+    "name": "{{config.adoProjectName}}"
+  },
+  "variables": {
+    "buildScript": {
+      "value": "{{combination.buildScript}}",
+      "allowOverride": false,
+      "isSecret": false
+    },
+    "nodeVersion": {
+      "value": "{{config.nodeVersion}}",
+      "allowOverride": false,
+      "isSecret": false
+    }{{#if config.tokenReplacement.enabled}},
+    "environmentFilePath": {
+      "value": "{{config.tokenReplacement.environmentFilePath}}",
+      "allowOverride": false,
+      "isSecret": false
+    }{{/if}}
+  },
+  "variableGroups": [],
+  "tags": [],
+  "triggers": [
+    {
+      "branchFilters": [
+        "+{{combination.branchName}}"
+      ],
+      "pathFilters": [],
+      "batchChanges": false,
+      "maxConcurrentBuildsPerBranch": 1,
+      "pollingInterval": 0,
+      "triggerType": 2
+    }
+  ],
+  "process": {
+    "phases": [
+      {
+        "steps": [
+
+          {{! ── Step 1: NodeTool ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Use Node.js $(nodeVersion)",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "31c75bbb-bcdf-4706-8d7f-66a6b596f0b8",
+              "versionSpec": "0.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "versionSpec": "$(nodeVersion)",
+              "checkLatest": "false"
+            }
+          },
+
+          {{! ── Step 2: npm install ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "npm install",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "npm install {{config.installFlags}}",
+              "workingDirectory": "",
+              "failOnStderr": "false"
+            }
+          }{{#if config.tokenReplacement.enabled}},
+
+          {{! ── Step 3: FileTransform ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Token replacement — {{config.tokenReplacement.environmentFilePath}}",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "f81a0706-d56c-41be-b2c8-a41cc90e39e2",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "folderPath": "$(System.DefaultWorkingDirectory)",
+              "xmlTransformationRules": "",
+              "jsonTargetFiles": "{{config.tokenReplacement.environmentFilePath}}"
+            }
+          }{{/if}},
+
+          {{! ── Step 4: npm run build ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "npm run build ({{combination.buildScript}})",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "npm run build -- --configuration=$(buildScript)",
+              "workingDirectory": "",
+              "failOnStderr": "false"
+            }
+          },
+
+          {{! ── Step 5: Publish build artifact ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Publish artifact — {{combination.pipelineName}}",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
+              "versionSpec": "1.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "PathtoPublish": "$(System.DefaultWorkingDirectory)/{{#if config.hasBrowserSubfolder}}{{config.distFolder}}/browser{{else}}{{config.distFolder}}{{/if}}",
+              "ArtifactName": "{{combination.pipelineName}}",
+              "publishLocation": "Container",
+              "TargetPath": "",
+              "appendCommitMessageToRunName": "true"
+            }
+          }
+
+        ],
+        "name": "Agent job 1",
+        "refName": "Job_1",
+        "condition": "succeeded()",
+        "target": {
+          "executionOptions": {
+            "type": 0
+          },
+          "allowScriptsAuthAccessOption": false,
+          "type": 1,
+          "demands": [],
+          "agentSpecification": {
+            "identifier": "ubuntu-latest"
+          }
+        },
+        "jobAuthorizationScope": 1,
+        "jobTimeoutInMinutes": 60,
+        "jobCancelTimeoutInMinutes": 5
+      }
+    ],
+    "type": 1
+  },
+  "repository": {
+    "properties": {
+      "labelSources": "0",
+      "labelSourcesFormat": "$(Build.BuildNumber)",
+      "reportBuildStatus": "true",
+      "gitLfsSupport": "false",
+      "skipSyncSource": "false",
+      "cleanOptions": "0",
+      "fetchDepth": "0",
+      "checkoutNestedSubmodules": "false"
+    },
+    "id": "{{config.repositoryName}}",
+    "type": "TfsGit",
+    "name": "{{config.repositoryName}}",
+    "defaultBranch": "refs/heads/{{combination.branchName}}",
+    "clean": "false",
+    "checkoutSubmodules": false
+  },
+  "options": [],
+  "jobAuthorizationScope": 1,
+  "jobTimeoutInMinutes": 60,
+  "jobCancelTimeoutInMinutes": 5,
+  "badgeEnabled": true,
+  "buildNumberFormat": "$(date:yyyyMMdd)$(rev:.r)"
+}

@@ -1,0 +1,53 @@
+name: {{pipelineName}}
+
+on:
+{{#if triggers.push}}
+  push:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.pr}}
+  pull_request:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.manual}}
+  workflow_dispatch:
+{{/if}}
+{{#if triggers.schedule}}
+  schedule:
+    - cron: '{{cronExpression}}'
+{{/if}}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '{{nodeVersion}}'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install {{installFlags}}
+
+{{#if useTokenReplacement}}
+      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["{{envFilePath}}"]'
+        env:
+          ENCRYPTION_IV: $\{{ secrets.ENCRYPTION_IV }}
+          ENCRYPTION_KEY: $\{{ secrets.ENCRYPTION_KEY }}
+{{/if}}
+
+      - name: Build
+        run: npm run {{buildScript}}
+
+      - name: Deploy to App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: {{appServiceName}}
+          publish-profile: $\{{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}

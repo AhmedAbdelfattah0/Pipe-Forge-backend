@@ -1,0 +1,72 @@
+name: {{pipelineName}}
+
+on:
+{{#if triggers.push}}
+  push:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.pr}}
+  pull_request:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.manual}}
+  workflow_dispatch:
+{{/if}}
+{{#if triggers.schedule}}
+  schedule:
+    - cron: '{{cronExpression}}'
+{{/if}}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '{{nodeVersion}}'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install {{installFlags}}
+
+{{#if useTokenReplacement}}
+      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["{{envFilePath}}"]'
+        env:
+          ENCRYPTION_IV: $\{{ secrets.ENCRYPTION_IV }}
+          ENCRYPTION_KEY: $\{{ secrets.ENCRYPTION_KEY }}
+{{/if}}
+
+      - name: Build
+        run: npm run {{buildScript}}
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: $\{{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Clear storage
+        run: |
+          az storage blob delete-batch \
+            --account-name {{storageAccountName}} \
+            --source '$web'
+
+      - name: Deploy to storage
+        run: |
+          az storage blob upload-batch \
+            --account-name {{storageAccountName}} \
+            --destination '$web' \
+            --source './{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}' \
+            --destination-path '{{deploymentPath}}' \
+            --pattern '*.*'
+
+          az storage blob upload-batch \
+            --account-name {{storageAccountName}} \
+            --destination '$web' \
+            --source './{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}' \
+            --pattern '*.*'

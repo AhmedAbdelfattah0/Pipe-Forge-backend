@@ -1,0 +1,70 @@
+# ============================================================
+# PipeForge — Generated YAML CI Build Pipeline
+# Pipeline : {{combination.pipelineName}}
+# MFE      : {{config.mfeName}}
+# Market   : {{combination.market.name}} ({{combination.market.code}})
+# Env      : {{combination.environment}}
+# {{#if combination.language}}Language : {{combination.language.name}} ({{combination.language.code}}){{/if}}
+# ============================================================
+
+trigger:
+  branches:
+    include:
+      - {{combination.branchName}}
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: buildScript
+    value: '{{combination.buildScript}}'
+  - name: pipelineName
+    value: '{{combination.pipelineName}}'
+  - name: nodeVersion
+    value: '{{config.nodeVersion}}'
+{{#if config.tokenReplacement.enabled}}
+  - name: environmentFilePath
+    value: '{{config.tokenReplacement.environmentFilePath}}'
+{{#each (splitCsv config.tokenReplacement.secretVariableNames)}}
+  - name: {{this}}
+    value: ''
+{{/each}}
+{{/if}}
+
+steps:
+
+  # ── 1. Install Node.js ───────────────────────────────────
+  - task: NodeTool@0
+    displayName: 'Use Node.js $(nodeVersion)'
+    inputs:
+      versionSpec: '$(nodeVersion)'
+
+  # ── 2. Install dependencies ──────────────────────────────
+  - script: npm install {{config.installFlags}}
+    displayName: 'npm install'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+{{#if config.tokenReplacement.enabled}}
+  # ── 3. Token replacement (environment file transform) ────
+  - task: FileTransform@2
+    displayName: 'Token replacement — {{config.tokenReplacement.environmentFilePath}}'
+    inputs:
+      folderPath: '$(Build.SourcesDirectory)'
+      xmlTransformationRules: ''
+      jsonTargetFiles: '{{config.tokenReplacement.environmentFilePath}}'
+{{/if}}
+
+  # ── {{#if config.tokenReplacement.enabled}}4{{else}}3{{/if}}. Build ──────────────────────────────────────────────
+  - script: npm run build -- --configuration=$(buildScript)
+    displayName: 'npm run build ({{combination.buildScript}})'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+  # ── {{#if config.tokenReplacement.enabled}}5{{else}}4{{/if}}. Publish build artifact ──────────────────────────────
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact — $(pipelineName)'
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/{{#if config.hasBrowserSubfolder}}{{config.distFolder}}/browser{{else}}{{config.distFolder}}{{/if}}'
+      artifactName: '$(pipelineName)'
+      publishLocation: 'Container'
