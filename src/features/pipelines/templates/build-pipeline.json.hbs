@@ -49,7 +49,7 @@
             "enabled": true,
             "continueOnError": false,
             "alwaysRun": false,
-            "displayName": "Use Node.js $(nodeVersion)",
+            "displayName": "Use Node.js {{config.nodeVersion}}",
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
@@ -59,7 +59,7 @@
             },
             "inputs": {
               "versionSource": "spec",
-              "versionSpec": "$(nodeVersion)",
+              "versionSpec": "{{config.nodeVersion}}",
               "checkLatest": "false"
             }
           },
@@ -198,7 +198,7 @@
             "enabled": true,
             "continueOnError": false,
             "alwaysRun": false,
-            "displayName": "Build (npm run $(buildScript))",
+            "displayName": "Build (npm run {{combination.buildScript}})",
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
@@ -210,7 +210,7 @@
               "command": "custom",
               "workingDir": "",
               "verbose": "false",
-              "customCommand": "run $(buildScript)",
+              "customCommand": "run {{combination.buildScript}}",
               "customRegistry": "useNpmrc",
               "publishRegistry": "useExternalRegistry"
             }

@@ -11,6 +11,7 @@
 import { Hono } from 'hono';
 import type { HonoEnv } from '../../../shared/middleware/auth.js';
 import { requireAdminMiddleware } from '../middleware/require-admin.middleware.js';
+import { createSupabaseAdmin } from '../../../config/supabase.js';
 
 import { adminPlansRoutes }       from './admin-plans.routes.js';
 import { adminMetricsRoutes }     from './admin-metrics.routes.js';
@@ -24,15 +25,27 @@ import { adminErrorsRoutes }      from './admin-errors.routes.js';
 export function adminRoutes() {
   const app = new Hono<HonoEnv>();
 
-  // Centralised admin check — applied to ALL admin sub-routes.
-  // Individual route handlers no longer need their own requireAdmin() calls,
-  // but they are kept as defence-in-depth.
-  app.use('*', requireAdminMiddleware);
+  // ── GET /me — Admin identity check (NO admin guard) ─────────────────────────
+  // This endpoint is intentionally exempt from requireAdminMiddleware.
+  // It answers "are you admin?" for ALL authenticated users (never 403).
+  // The frontend calls this on startup to determine whether to show admin UI.
+  app.get('/me', async (c) => {
+    const userId = c.get('userId');
+    if (!userId) {
+      return c.json({ isAdmin: false });
+    }
+    const supabase = createSupabaseAdmin(c.env);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+    return c.json({ isAdmin: !error && !!data });
+  });
 
-  // Lightweight admin identity check — used by the frontend guard ONLY.
-  // requireAdminMiddleware above already verified admin_users membership,
-  // so this handler has nothing left to do except confirm access.
-  app.get('/me', (c) => c.json({ isAdmin: true }));
+  // Centralised admin check — applied to ALL other admin sub-routes.
+  // The /me route above is registered first so it is exempt from this middleware.
+  app.use('*', requireAdminMiddleware);
 
   app.route('/', adminMetricsRoutes());
   app.route('/', adminUsersRoutes());
