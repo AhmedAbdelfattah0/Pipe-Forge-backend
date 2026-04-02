@@ -41606,8 +41606,10 @@ app.onError((err, c) => {
       err.statusCode
     );
   }
-  console.error("Unhandled error:", err);
-  return c.json({ status: "error", message: "Internal server error" }, 500);
+  const message = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : void 0;
+  console.error("Unhandled error:", message, stack);
+  return c.json({ status: "error", message: `Internal server error: ${message}` }, 500);
 });
 var src_default = app;
 
