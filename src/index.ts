@@ -142,9 +142,8 @@ app.onError((err, c) => {
   }
 
   const message = err instanceof Error ? err.message : String(err);
-  const stack = err instanceof Error ? err.stack : undefined;
-  console.error('Unhandled error:', message, stack);
-  return c.json({ status: 'error', message: `Internal server error: ${message}` }, 500);
+  console.error('Unhandled error:', err);
+  return c.json({ status: 'error', message }, 500);
 });
 
 export default app;

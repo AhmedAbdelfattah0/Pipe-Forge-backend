@@ -1,9 +1,12 @@
 /**
  * template.service.ts
  *
- * Compiles and caches every Handlebars template from the static template bundle.
- * No filesystem access — templates are imported as string constants for
- * Cloudflare Workers compatibility.
+ * Serves pre-compiled Handlebars templates to the pipeline generator.
+ * No filesystem access — templates are precompiled at build time and
+ * bundled as plain JavaScript functions in template-precompiled.ts.
+ *
+ * Using Handlebars.template(precompiledSpec) instead of Handlebars.compile(source)
+ * avoids eval() / new Function() — required for Cloudflare Workers compatibility.
  *
  * Public API
  * ----------
@@ -13,7 +16,7 @@
 
 import Handlebars from 'handlebars';
 import { AppError } from '../../../shared/utils/app-error.js';
-import { TEMPLATE_SOURCES } from './template-sources.js';
+import { PRECOMPILED_TEMPLATES } from './template-precompiled.js';
 
 // ─── Handlebars helpers ───────────────────────────────────────────────────────
 
@@ -25,15 +28,6 @@ Handlebars.registerHelper('splitCsv', (csv: unknown): string[] => {
   return csv.split(',').map((s) => s.trim()).filter(Boolean);
 });
 
-// ─── Template cache ───────────────────────────────────────────────────────────
-
-const templateCache = new Map<string, Handlebars.TemplateDelegate>();
-
-// Compile all templates from static sources
-for (const [name, source] of Object.entries(TEMPLATE_SOURCES)) {
-  templateCache.set(name, Handlebars.compile(source));
-}
-
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -43,23 +37,23 @@ for (const [name, source] of Object.entries(TEMPLATE_SOURCES)) {
  * @param context - The data object passed to the template at render time.
  * @returns The rendered string output.
  *
- * @throws {AppError} 500 if the template name is not found in the cache.
+ * @throws {AppError} 500 if the template name is not found.
  */
 export function renderTemplate(templateName: string, context: unknown): string {
-  const compiled = templateCache.get(templateName);
-  if (compiled === undefined) {
+  const delegate = PRECOMPILED_TEMPLATES[templateName];
+  if (delegate === undefined) {
     throw new AppError(
-      `Template "${templateName}" not found. Available: ${[...templateCache.keys()].join(', ')}`,
+      `Template "${templateName}" not found. Available: ${Object.keys(PRECOMPILED_TEMPLATES).join(', ')}`,
       500,
       false,
     );
   }
-  return compiled(context);
+  return delegate(context as Record<string, unknown>);
 }
 
 /**
- * Returns the names of all templates that are currently loaded in the cache.
+ * Returns the names of all templates that are currently loaded.
  */
 export function listLoadedTemplates(): string[] {
-  return [...templateCache.keys()];
+  return Object.keys(PRECOMPILED_TEMPLATES);
 }

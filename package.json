@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "precompile": "node scripts/precompile-templates.mjs",
     "build": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch"

@@ -2315,7 +2315,7 @@ var require_no_conflict = __commonJS({
     init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
     init_performance2();
     exports.__esModule = true;
-    exports["default"] = function(Handlebars2) {
+    exports["default"] = function(Handlebars3) {
       (function() {
         if (typeof globalThis === "object") return;
         Object.prototype.__defineGetter__("__magic__", function() {
@@ -2325,11 +2325,11 @@ var require_no_conflict = __commonJS({
         delete Object.prototype.__magic__;
       })();
       var $Handlebars = globalThis.Handlebars;
-      Handlebars2.noConflict = function() {
-        if (globalThis.Handlebars === Handlebars2) {
+      Handlebars3.noConflict = function() {
+        if (globalThis.Handlebars === Handlebars3) {
           globalThis.Handlebars = $Handlebars;
         }
-        return Handlebars2;
+        return Handlebars3;
       };
     };
     module.exports = exports["default"];
@@ -37052,2270 +37052,1337 @@ init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
-var import_handlebars = __toESM(require_handlebars());
+var import_handlebars2 = __toESM(require_handlebars());
 
-// src/features/pipelines/services/template-sources.ts
+// src/features/pipelines/services/template-precompiled.ts
 init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
-var TEMPLATE_SOURCES = {
-  "build-pipeline.json.hbs": `{
-  "id": -1,
-  "name": "{{combination.pipelineName}}",
-  "type": 2,
-  "quality": 1,
-  "path": "\\\\",
-  "project": {
-    "name": "{{config.adoProjectName}}"
-  },
-  "variables": {
-    "buildScript": {
-      "value": "{{combination.buildScript}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "nodeVersion": {
-      "value": "{{config.nodeVersion}}",
-      "allowOverride": false,
-      "isSecret": false
-    }{{#if config.tokenReplacement.enabled}},
-    "environmentFilePath": {
-      "value": "{{config.tokenReplacement.environmentFilePath}}",
-      "allowOverride": false,
-      "isSecret": false
-    }{{/if}}
-  },
-  "variableGroups": [],
-  "tags": [],
-  "triggers": [
-    {
-      "branchFilters": [
-        "+{{combination.branchName}}"
-      ],
-      "pathFilters": [],
-      "batchChanges": false,
-      "maxConcurrentBuildsPerBranch": 1,
-      "pollingInterval": 0,
-      "triggerType": 2
-    }
-  ],
-  "process": {
-    "phases": [
-      {
-        "steps": [
-
-          {{! \u2500\u2500 Step 1: NodeTool \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Use Node.js $(nodeVersion)",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "31c75bbb-bcdf-4706-8d7f-66a6b596f0b8",
-              "versionSpec": "0.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "versionSpec": "$(nodeVersion)",
-              "checkLatest": "false"
-            }
-          },
-
-          {{! \u2500\u2500 Step 2: npm ci \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "npm ci",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "npm ci",
-              "workingDirectory": "",
-              "failOnStderr": "false"
-            }
-          }{{#if config.qualityGates.enabled}}{{#if config.qualityGates.typescript.enabled}},
-
-          {{! \u2500\u2500 Quality Gate: TypeScript \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Quality Gate \u2014 TypeScript check",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "{{config.qualityGates.typescript.command}}",
-              "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
-            }
-          }{{/if}}{{#if config.qualityGates.lint.enabled}},
-
-          {{! \u2500\u2500 Quality Gate: ESLint \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Quality Gate \u2014 ESLint",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "{{config.qualityGates.lint.command}}",
-              "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
-            }
-          }{{/if}}{{#if config.qualityGates.tests.enabled}},
-
-          {{! \u2500\u2500 Quality Gate: Unit Tests \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Quality Gate \u2014 Unit tests",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "{{config.qualityGates.tests.command}}",
-              "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
-            }
-          }{{/if}}{{#if config.qualityGates.format.enabled}},
-
-          {{! \u2500\u2500 Quality Gate: Format Check \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Quality Gate \u2014 Format check",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "{{config.qualityGates.format.command}}",
-              "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
-            }
-          }{{/if}}{{/if}}{{#if config.tokenReplacement.enabled}},
-
-          {{! \u2500\u2500 Step 3: FileTransform \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Token replacement \u2014 {{config.tokenReplacement.environmentFilePath}}",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "f81a0706-d56c-41be-b2c8-a41cc90e39e2",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "folderPath": "$(System.DefaultWorkingDirectory)",
-              "xmlTransformationRules": "",
-              "jsonTargetFiles": "{{config.tokenReplacement.environmentFilePath}}"
-            }
-          }{{/if}},
-
-          {{! \u2500\u2500 Step 4: npm run build \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "npm run build ({{combination.buildScript}})",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "versionSpec": "2.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "script": "npm run build -- --configuration=$(buildScript)",
-              "workingDirectory": "",
-              "failOnStderr": "false"
-            }
-          },
-
-          {{! \u2500\u2500 Step 5: Publish build artifact \u2500\u2500 }}
-          {
-            "environment": {},
-            "enabled": true,
-            "continueOnError": false,
-            "alwaysRun": false,
-            "displayName": "Publish artifact \u2014 {{combination.pipelineName}}",
-            "timeoutInMinutes": 0,
-            "condition": "succeeded()",
-            "task": {
-              "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
-              "versionSpec": "1.*",
-              "definitionType": "task"
-            },
-            "inputs": {
-              "PathtoPublish": "$(System.DefaultWorkingDirectory)/{{#if config.hasBrowserSubfolder}}{{config.distFolder}}/browser{{else}}{{config.distFolder}}{{/if}}",
-              "ArtifactName": "{{combination.pipelineName}}",
-              "publishLocation": "Container",
-              "TargetPath": "",
-              "appendCommitMessageToRunName": "true"
-            }
-          }
-
-        ],
-        "name": "Agent job 1",
-        "refName": "Job_1",
-        "condition": "succeeded()",
-        "target": {
-          "executionOptions": {
-            "type": 0
-          },
-          "allowScriptsAuthAccessOption": false,
-          "type": 1,
-          "demands": [],
-          "agentSpecification": {
-            "identifier": "ubuntu-latest"
-          }
-        },
-        "jobAuthorizationScope": 1,
-        "jobTimeoutInMinutes": 60,
-        "jobCancelTimeoutInMinutes": 5
+var import_handlebars = __toESM(require_handlebars());
+var PRECOMPILED_TEMPLATES = {
+  "build-pipeline.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
       }
-    ],
-    "type": 1
-  },
-  "repository": {
-    "properties": {
-      "labelSources": "0",
-      "labelSourcesFormat": "$(Build.BuildNumber)",
-      "reportBuildStatus": "true",
-      "gitLfsSupport": "false",
-      "skipSyncSource": "false",
-      "cleanOptions": "0",
-      "fetchDepth": "0",
-      "checkoutNestedSubmodules": "false"
-    },
-    "id": "{{config.repositoryName}}",
-    "type": "TfsGit",
-    "name": "{{config.repositoryName}}",
-    "defaultBranch": "refs/heads/{{combination.branchName}}",
-    "clean": "false",
-    "checkoutSubmodules": false
-  },
-  "options": [],
-  "jobAuthorizationScope": 1,
-  "jobTimeoutInMinutes": 60,
-  "jobCancelTimeoutInMinutes": 5,
-  "badgeEnabled": true,
-  "buildNumberFormat": "$(date:yyyyMMdd)$(rev:.r)"
-}
-`,
-  "build-pipeline.yaml.hbs": `# ============================================================
-# PipeForge \u2014 Generated YAML CI Build Pipeline
-# Pipeline : {{combination.pipelineName}}
-# Project  : {{config.projectName}}
-# Market   : {{combination.market.name}} ({{combination.market.code}})
-# Env      : {{combination.environment}}
-# {{#if combination.language}}Language : {{combination.language.name}} ({{combination.language.code}}){{/if}}
-# ============================================================
-
-trigger:
-  branches:
-    include:
-      - {{combination.branchName}}
-
-pr: none
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  - name: buildScript
-    value: '{{combination.buildScript}}'
-  - name: pipelineName
-    value: '{{combination.pipelineName}}'
-  - name: nodeVersion
-    value: '{{config.nodeVersion}}'
-{{#if config.tokenReplacement.enabled}}
-  - name: environmentFilePath
-    value: '{{config.tokenReplacement.environmentFilePath}}'
-{{#each (splitCsv config.tokenReplacement.secretVariableNames)}}
-  - name: {{this}}
-    value: ''
-{{/each}}
-{{/if}}
-
-steps:
-
-  # \u2500\u2500 1. Install Node.js \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - task: NodeTool@0
-    displayName: 'Use Node.js $(nodeVersion)'
-    inputs:
-      versionSpec: '$(nodeVersion)'
-
-  # \u2500\u2500 2. Install dependencies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: npm ci
-    displayName: 'npm ci'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-{{#if config.qualityGates.enabled}}
-{{#if config.qualityGates.typescript.enabled}}
-  # \u2500\u2500 Quality Gate: TypeScript \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: {{config.qualityGates.typescript.command}}
-    displayName: 'Quality Gate \u2014 TypeScript check'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-{{/if}}
-{{#if config.qualityGates.lint.enabled}}
-  # \u2500\u2500 Quality Gate: ESLint \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: {{config.qualityGates.lint.command}}
-    displayName: 'Quality Gate \u2014 ESLint'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-{{/if}}
-{{#if config.qualityGates.tests.enabled}}
-  # \u2500\u2500 Quality Gate: Unit Tests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: {{config.qualityGates.tests.command}}
-    displayName: 'Quality Gate \u2014 Unit tests'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-{{/if}}
-{{#if config.qualityGates.format.enabled}}
-  # \u2500\u2500 Quality Gate: Format Check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: {{config.qualityGates.format.command}}
-    displayName: 'Quality Gate \u2014 Format check'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-{{/if}}
-{{/if}}
-{{#if config.tokenReplacement.enabled}}
-  # \u2500\u2500 3. Token replacement (environment file transform) \u2500\u2500\u2500\u2500
-  - task: FileTransform@2
-    displayName: 'Token replacement \u2014 {{config.tokenReplacement.environmentFilePath}}'
-    inputs:
-      folderPath: '$(Build.SourcesDirectory)'
-      xmlTransformationRules: ''
-      jsonTargetFiles: '{{config.tokenReplacement.environmentFilePath}}'
-{{/if}}
-
-  # \u2500\u2500 {{#if config.tokenReplacement.enabled}}4{{else}}3{{/if}}. Build \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - script: npm run build -- --configuration=$(buildScript)
-    displayName: 'npm run build ({{combination.buildScript}})'
-    workingDirectory: '$(Build.SourcesDirectory)'
-
-  # \u2500\u2500 {{#if config.tokenReplacement.enabled}}5{{else}}4{{/if}}. Publish build artifact \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact \u2014 $(pipelineName)'
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/{{#if config.hasBrowserSubfolder}}{{config.distFolder}}/browser{{else}}{{config.distFolder}}{{/if}}'
-      artifactName: '$(pipelineName)'
-      publishLocation: 'Container'
-`,
-  "readme.md.hbs": `# {{config.projectName}} \u2014 Azure DevOps Pipelines
-
-> Generated by **PipeForge** on {{generatedAt}}
-
----
-
-## Project Overview
-
-| Field | Value |
-|-------|-------|
-| **Project Name** | \`{{config.projectName}}\` |
-| **Repository** | \`{{config.repositoryName}}\` |
-| **ADO Organization** | \`{{config.adoOrganization}}\` |
-| **ADO Project** | \`{{config.adoProjectName}}\` |
-| **Node Version** | \`{{config.nodeVersion}}\` |
-| **Dist Folder** | \`{{config.distFolder}}{{#if config.hasBrowserSubfolder}}/browser{{/if}}\` |
-| **Deploy Target** | \`{{config.deployTarget}}\` |
-| **Multi-Language** | \`{{#if config.isMultiLanguage}}Yes{{else}}No{{/if}}\` |
-
----
-
-## Scope
-
-### Environments
-
-{{#each config.environments}}
-- \`{{this}}\`
-{{/each}}
-
-### Markets
-
-| Name | Code | Status |
-|------|------|--------|
-{{#each config.markets}}
-| {{name}} | \`{{code}}\` | {{#if enabled}}Enabled{{else}}Disabled{{/if}} |
-{{/each}}
-
-{{#if config.isMultiLanguage}}
-### Languages
-
-{{#each config.languages}}
-- **{{name}}** (\`{{code}}\`)
-{{/each}}
-{{/if}}
-
----
-
-## Pipeline Naming Convention
-
-All pipelines follow the pattern:
-
-\`\`\`
-{ENV}-{MARKET}-{MFE}-{LANG}
-\`\`\`
-
-{{#if config.isMultiLanguage}}
-Example: \`QA-SAUDI-{{config.projectName}}-EN\`
-{{else}}
-Example: \`QA-SAUDI-{{config.projectName}}\`
-{{/if}}
-
----
-
-## Generated Files
-
-The following {{generatedFiles.length}} files were generated:
-
-| # | File Name | Type | Path |
-|---|-----------|------|------|
-{{#each generatedFiles}}
-| {{addOne @index}} | \`{{name}}\` | {{type}} | \`{{path}}\` |
-{{/each}}
-
----
-
-## Pipeline Combinations
-
-Each combination maps to one build pipeline and one release pipeline:
-
-| Pipeline Name | Environment | Market | {{#if config.isMultiLanguage}}Language | {{/if}}Branch | Build Script |
-|---------------|-------------|--------|{{#if config.isMultiLanguage}}---------|{{/if}}--------|--------------|
-{{#each combinations}}
-| \`{{pipelineName}}\` | {{environment}} | {{market.name}} | {{#if ../config.isMultiLanguage}}{{language.name}} | {{/if}}\`{{branchName}}\` | \`{{buildScript}}\` |
-{{/each}}
-
----
-
-## How to Import into Azure DevOps
-
-### YAML Pipelines (build-pipeline.yaml)
-
-1. In Azure DevOps, navigate to **Pipelines > Pipelines**.
-2. Click **New pipeline**.
-3. Select **Azure Repos Git** (or your repository source).
-4. Choose **Existing Azure Pipelines YAML file**.
-5. Select the branch and point to the generated \`.yaml\` file.
-6. Click **Continue**, then **Save and run**.
-
-### Classic JSON Pipelines (build-pipeline.json / release-*.json)
-
-#### Build (Classic JSON)
-
-1. Navigate to **Pipelines > Pipelines**.
-2. Click **New pipeline** and switch to the Classic Editor.
-3. Use the **Import** option (three-dot menu) to upload the \`build-pipeline.json\` file.
-4. Review the imported pipeline, fix any pending service connection references, and save.
-
-#### Release (Classic JSON)
-
-1. Navigate to **Pipelines > Releases**.
-2. Click **New** > **Import release pipeline**.
-3. Upload the \`release-*.json\` file for the corresponding combination.
-4. After importing:
-   - Re-link the artifact source to the correct build pipeline.
-   - Verify service connection \`{{config.serviceConnectionId}}\` is accessible.
-   - Set any secret variable values (they are not exported in the JSON).
-5. Save and create a release to validate the configuration.
-
----
-
-## Configuration Notes
-
-{{#if config.tokenReplacement.enabled}}
-### Token Replacement
-
-Token replacement is **enabled** for this project.
-
-- **Environment file**: \`{{config.tokenReplacement.environmentFilePath}}\`
-- **Secret variable names**: \`{{config.tokenReplacement.secretVariableNames}}\`
-
-The \`FileTransform@2\` task is included in build pipelines. Ensure all secret variables listed above are defined as secret pipeline variables before running a build.
-{{else}}
-### Token Replacement
-
-Token replacement is **disabled** for this project. No \`FileTransform\` task is included in the build pipelines.
-{{/if}}
-
-{{#if config.triggerPipelineAfterDeploy}}
-### Downstream Pipeline Trigger
-
-After each successful deployment, a downstream pipeline trigger is configured.
-
-- **Trigger Pipeline ID**: \`{{config.triggerPipelineId}}\`
-
-Ensure the \`System.AccessToken\` has permission to queue builds in the target pipeline.
-{{/if}}
-
-{{#if config.protectedPaths.length}}
-### Protected Files Setup
-
-Certain files are preserved across deployments by backing them up to a separate container and restoring after each deploy.
-
-**Backup container:** \`{{config.protectedPathsContainer}}\`
-
-**Protected paths:**
-{{#each config.protectedPaths}}
-- \`{{this}}\`
-{{/each}}
-
-**One-time setup** \u2014 create the backup container and upload your protected files:
-
-\`\`\`bash
-# Create the backup container
-az storage container create \\
-  --name '{{config.protectedPathsContainer}}' \\
-  --account-name <YOUR_STORAGE_ACCOUNT>
-
-# Upload each protected file (repeat for each path)
-az storage blob upload \\
-  --container-name '{{config.protectedPathsContainer}}' \\
-  --name '<PATH>' \\
-  --file '<LOCAL_FILE>' \\
-  --account-name <YOUR_STORAGE_ACCOUNT>
-\`\`\`
-
-After setup, every deployment will automatically restore these files from the backup container to \`$web\`.
-{{/if}}
-
-### Service Connection
-
-All Azure tasks reference service connection: **\`{{config.serviceConnectionId}}\`**
-
-Verify this service connection exists in your ADO project under **Project Settings > Service connections** before importing any pipeline.
-
----
-
-## QA vs Production Branches
-
-| Environment | Branch |
-|-------------|--------|
-| QA | \`{{config.qaBranch}}\` |
-| PROD | \`{{config.productionBranch}}\` |
-
----
-
-## Troubleshooting
-
-### Pipeline fails on npm ci
-
-This usually means your package-lock.json is out of sync with package.json.
-
-Resolution:
-  1. Delete package-lock.json from your project root
-  2. Delete the node_modules folder
-  3. Run: npm install
-  4. Commit the newly generated package-lock.json
-  5. Push and re-run the pipeline
-
-Why npm ci instead of npm install?
-npm ci is faster and stricter in CI environments. It fails immediately
-if package-lock.json is missing or out of sync, providing a clear signal.
-Always commit your package-lock.json to the repository.
-
----
-
-*This README was auto-generated by PipeForge. Do not edit manually \u2014 regenerate from the PipeForge wizard if changes are needed.*
-`,
-  "release-appservice.json.hbs": `{
-  "id": -1,
-  "name": "RELEASE-{{combination.pipelineName}}",
-  "type": 1,
-  "quality": 1,
-  "path": "\\\\",
-  "createdOn": "{{generatedAt}}",
-  "project": {
-    "name": "{{config.adoProjectName}}"
-  },
-  "variables": {
-    "appServiceName": {
-      "value": "{{appServiceName}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "deploymentPath": {
-      "value": "{{combination.deploymentPath}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "projectName": {
-      "value": "{{config.projectName}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "serviceConnectionId": {
-      "value": "{{config.serviceConnectionId}}",
-      "allowOverride": false,
-      "isSecret": false
-    }
-  },
-  "variableGroups": [],
-  "environments": [
-    {
-      "id": 1,
-      "name": "{{combination.environment}}",
-      "rank": 1,
-      "owner": {
-        "displayName": "PipeForge"
-      },
-      "variables": {},
-      "variableGroups": [],
-      "preDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 1
-        }
-      },
-      "postDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 2
-        }
-      },
-      "deployPhases": [
-        {
-          "deploymentInput": {
-            "parallelExecution": {
-              "parallelExecutionType": 0
-            },
-            "agentSpecification": {
-              "identifier": "ubuntu-latest"
-            },
-            "skipArtifactsDownload": false,
-            "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
-            },
-            "queueId": 0,
-            "demands": [],
-            "enableAccessToken": false,
-            "timeoutInMinutes": 0,
-            "jobCancelTimeoutInMinutes": 1,
-            "condition": "succeeded()",
-            "overrideInputs": {}
-          },
-          "rank": 1,
-          "phaseType": 1,
-          "name": "Agent job",
-          "refName": "Job_1",
-          "workflowTasks": [
-
-            {{! \u2500\u2500 Task 1: AzureRmWebAppDeployment@4 \u2500\u2500 }}
-            {
-              "taskId": "497d490f-eea7-4f2b-ab94-48d9c1acdcb1",
-              "version": "4.*",
-              "name": "Azure App Service Deploy \u2014 {{combination.pipelineName}}",
-              "refName": "AzureRmWebAppDeployment",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "ConnectionType": "AzureRM",
-                "ConnectedServiceName": "{{config.serviceConnectionId}}",
-                "PublishProfilePath": "$(System.DefaultWorkingDirectory)/**/*.pubxml",
-                "PublishProfilePassword": "",
-                "WebAppKind": "webApp",
-                "WebAppName": "$(appServiceName)",
-                "DeployToSlotOrASEFlag": "false",
-                "ResourceGroupName": "",
-                "SlotName": "production",
-                "VirtualApplication": "",
-                "Package": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}/**/*.zip",
-                "packageForLinux": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}/**/*.zip",
-                "RuntimeStack": "",
-                "StartupCommand": "",
-                "ScriptType": "",
-                "InlineScript": ":: You can provide your deployment commands here. One command per line.",
-                "WebConfigParameters": "",
-                "AppSettings": "",
-                "ConfigurationSettings": "",
-                "enableCustomDeployment": "false",
-                "DeploymentType": "webDeploy",
-                "TakeAppOfflineFlag": "true",
-                "UseWebDeploy": "false",
-                "ExcludeFilesFromAppDataFlag": "true",
-                "AdditionalArguments": "-retryAttempts:6 -retryInterval:10000",
-                "RenameFilesFlag": "true",
-                "RemoveAdditionalFilesFlag": "false",
-                "enableXmlTransform": "false",
-                "enableXmlVariableSubstitution": "false",
-                "JSONFiles": ""
-              }
-            }{{#if config.triggerPipelineAfterDeploy}},
-
-            {{! \u2500\u2500 Task 2 (conditional): Trigger downstream pipeline \u2500\u2500 }}
-            {
-              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
-              "version": "0.*",
-              "name": "Trigger downstream pipeline",
-              "refName": "TriggerDownstreamPipeline",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "waitForCompletion": "false",
-                "buildDefinition": "{{config.triggerPipelineId}}",
-                "queueBuildForUserThatTriggeredBuild": "true",
-                "ignoreSslCertificateErrors": "false",
-                "useSameSourceVersion": "false",
-                "useCustomSourceVersion": "false",
-                "buildParameters": "",
-                "storeInEnvironment": "false",
-                "authenticationMethod": "OAuth Token",
-                "password": "$(System.AccessToken)",
-                "enableSecureParameters": "false"
-              }
-            }{{/if}}
-
-          ]
-        }
-      ],
-      "environmentOptions": {
-        "emailNotificationType": "OnlyOnFailure",
-        "emailRecipients": "release.environment.owner;release.creator",
-        "skipArtifactsDownload": false,
-        "timeoutInMinutes": 0,
-        "enableAccessToken": false,
-        "publishDeploymentStatus": true,
-        "badgeEnabled": false,
-        "autoLinkWorkItems": false,
-        "pullRequestDeploymentEnabled": false
-      },
-      "demands": [],
-      "conditions": [
-        {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
-          "value": ""
-        }
-      ],
-      "executionPolicy": {
-        "concurrencyCount": 1,
-        "queueDepthCount": 0
-      },
-      "schedules": [],
-      "retentionPolicy": {
-        "daysToKeep": 30,
-        "releasesToKeep": 3,
-        "retainBuild": true
-      },
-      "processParameters": {},
-      "properties": {}
-    }
-  ],
-  "artifacts": [
-    {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
-  "releaseNameFormat": "Release-$(rev:r)",
-  "tags": [],
-  "properties": {}
-}
-`,
-  "release-storage.json.hbs": `{
-  "id": -1,
-  "name": "RELEASE-{{combination.pipelineName}}",
-  "type": 1,
-  "quality": 1,
-  "path": "\\\\",
-  "createdOn": "{{generatedAt}}",
-  "project": {
-    "name": "{{config.adoProjectName}}"
-  },
-  "variables": {
-    "storageAccountName": {
-      "value": "{{storageAccountName}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "deploymentPath": {
-      "value": "{{combination.deploymentPath}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "projectName": {
-      "value": "{{config.projectName}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "serviceConnectionId": {
-      "value": "{{config.serviceConnectionId}}",
-      "allowOverride": false,
-      "isSecret": false
-    }
-  },
-  "variableGroups": [],
-  "environments": [
-    {
-      "id": 1,
-      "name": "{{combination.environment}}",
-      "rank": 1,
-      "owner": {
-        "displayName": "PipeForge"
-      },
-      "variables": {},
-      "variableGroups": [],
-      "preDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 1
-        }
-      },
-      "postDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 2
-        }
-      },
-      "deployPhases": [
-        {
-          "deploymentInput": {
-            "parallelExecution": {
-              "parallelExecutionType": 0
-            },
-            "agentSpecification": {
-              "identifier": "ubuntu-latest"
-            },
-            "skipArtifactsDownload": false,
-            "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
-            },
-            "queueId": 0,
-            "demands": [],
-            "enableAccessToken": false,
-            "timeoutInMinutes": 0,
-            "jobCancelTimeoutInMinutes": 1,
-            "condition": "succeeded()",
-            "overrideInputs": {}
-          },
-          "rank": 1,
-          "phaseType": 1,
-          "name": "Agent job",
-          "refName": "Job_1",
-          "workflowTasks": [
-
-            {{! \u2500\u2500 Task 1: Delete existing blobs (primary path) \u2500\u2500 }}
-            {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
-              "name": "Azure CLI \u2014 delete blobs at primary path",
-              "refName": "AzureCLI_Delete_Primary",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+      return void 0;
+    };
+    return ',\n    "environmentFilePath": {\n      "value": "' + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }';
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 85, "column": 46 }, "end": { "line": 106, "column": 18 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 106, "column": 18 }, "end": { "line": 127, "column": 18 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 127, "column": 18 }, "end": { "line": 148, "column": 18 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 148, "column": 18 }, "end": { "line": 169, "column": 18 } } })) != null ? stack1 : "");
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Quality Gate \u2014 TypeScript check",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "' + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + '",\n              "workingDirectory": "$(Build.SourcesDirectory)",\n              "failOnStderr": "false"\n            }\n          }';
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Quality Gate \u2014 ESLint",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "' + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + '",\n              "workingDirectory": "$(Build.SourcesDirectory)",\n              "failOnStderr": "false"\n            }\n          }';
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Quality Gate \u2014 Unit tests",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "' + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + '",\n              "workingDirectory": "$(Build.SourcesDirectory)",\n              "failOnStderr": "false"\n            }\n          }';
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Quality Gate \u2014 Format check",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "' + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + '",\n              "workingDirectory": "$(Build.SourcesDirectory)",\n              "failOnStderr": "false"\n            }\n          }';
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Token replacement \u2014 ' + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + '",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "f81a0706-d56c-41be-b2c8-a41cc90e39e2",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "folderPath": "$(System.DefaultWorkingDirectory)",\n              "xmlTransformationRules": "",\n              "jsonTargetFiles": "' + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + '"\n            }\n          }';
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "distFolder") : stack1, depth0)) + "/browser";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "distFolder") : stack1, depth0));
+  }, "8"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return '{\n  "id": -1,\n  "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n  "type": 2,\n  "quality": 1,\n  "path": "\\\\",\n  "project": {\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n  },\n  "variables": {\n    "buildScript": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "buildScript") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "nodeVersion": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "nodeVersion") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 20, "column": 5 }, "end": { "line": 25, "column": 12 } } })) != null ? stack1 : "") + '\n  },\n  "variableGroups": [],\n  "tags": [],\n  "triggers": [\n    {\n      "branchFilters": [\n        "+' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "branchName") : stack1, depth0)) + '"\n      ],\n      "pathFilters": [],\n      "batchChanges": false,\n      "maxConcurrentBuildsPerBranch": 1,\n      "pollingInterval": 0,\n      "triggerType": 2\n    }\n  ],\n  "process": {\n    "phases": [\n      {\n        "steps": [\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Use Node.js $(nodeVersion)",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "31c75bbb-bcdf-4706-8d7f-66a6b596f0b8",\n              "versionSpec": "0.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "versionSpec": "$(nodeVersion)",\n              "checkLatest": "false"\n            }\n          },\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "npm ci",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "npm ci",\n              "workingDirectory": "",\n              "failOnStderr": "false"\n            }\n          }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 85, "column": 11 }, "end": { "line": 169, "column": 25 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 169, "column": 25 }, "end": { "line": 190, "column": 18 } } })) != null ? stack1 : "") + ',\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "npm run build (' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "buildScript") : stack1, depth0)) + ')",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "versionSpec": "2.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "script": "npm run build -- --configuration=$(buildScript)",\n              "workingDirectory": "",\n              "failOnStderr": "false"\n            }\n          },\n\n          {\n            "environment": {},\n            "enabled": true,\n            "continueOnError": false,\n            "alwaysRun": false,\n            "displayName": "Publish artifact \u2014 ' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n            "timeoutInMinutes": 0,\n            "condition": "succeeded()",\n            "task": {\n              "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",\n              "versionSpec": "1.*",\n              "definitionType": "task"\n            },\n            "inputs": {\n              "PathtoPublish": "$(System.DefaultWorkingDirectory)/' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "hasBrowserSubfolder") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.program(8, data, 0), "data": data, "loc": { "start": { "line": 228, "column": 66 }, "end": { "line": 228, "column": 165 } } })) != null ? stack1 : "") + '",\n              "ArtifactName": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n              "publishLocation": "Container",\n              "TargetPath": "",\n              "appendCommitMessageToRunName": "true"\n            }\n          }\n\n        ],\n        "name": "Agent job 1",\n        "refName": "Job_1",\n        "condition": "succeeded()",\n        "target": {\n          "executionOptions": {\n            "type": 0\n          },\n          "allowScriptsAuthAccessOption": false,\n          "type": 1,\n          "demands": [],\n          "agentSpecification": {\n            "identifier": "ubuntu-latest"\n          }\n        },\n        "jobAuthorizationScope": 1,\n        "jobTimeoutInMinutes": 60,\n        "jobCancelTimeoutInMinutes": 5\n      }\n    ],\n    "type": 1\n  },\n  "repository": {\n    "properties": {\n      "labelSources": "0",\n      "labelSourcesFormat": "$(Build.BuildNumber)",\n      "reportBuildStatus": "true",\n      "gitLfsSupport": "false",\n      "skipSyncSource": "false",\n      "cleanOptions": "0",\n      "fetchDepth": "0",\n      "checkoutNestedSubmodules": "false"\n    },\n    "id": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "repositoryName") : stack1, depth0)) + '",\n    "type": "TfsGit",\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "repositoryName") : stack1, depth0)) + '",\n    "defaultBranch": "refs/heads/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "branchName") : stack1, depth0)) + '",\n    "clean": "false",\n    "checkoutSubmodules": false\n  },\n  "options": [],\n  "jobAuthorizationScope": 1,\n  "jobTimeoutInMinutes": 60,\n  "jobCancelTimeoutInMinutes": 5,\n  "badgeEnabled": true,\n  "buildNumberFormat": "$(date:yyyyMMdd)$(rev:.r)"\n}\n';
+  }, "main"), "useData": true }),
+  "build-pipeline.yaml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "Language : " + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "language") : stack1) != null ? lookupProperty(stack1, "name") : stack1, depth0)) + " (" + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "language") : stack1) != null ? lookupProperty(stack1, "code") : stack1, depth0)) + ")";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  - name: environmentFilePath\n    value: '" + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + "'\n" + ((stack1 = lookupProperty(helpers, "each").call(alias1, (lookupProperty(helpers, "splitCsv") || depth0 && lookupProperty(depth0, "splitCsv") || container.hooks.helperMissing).call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "secretVariableNames") : stack1, { "name": "splitCsv", "hash": {}, "data": data, "loc": { "start": { "line": 30, "column": 8 }, "end": { "line": 30, "column": 62 } } }), { "name": "each", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 30, "column": 0 }, "end": { "line": 33, "column": 9 } } })) != null ? stack1 : "");
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  - name: " + container.escapeExpression(container.lambda(depth0, depth0)) + "\n    value: ''\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 50, "column": 0 }, "end": { "line": 56, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 57, "column": 0 }, "end": { "line": 63, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 64, "column": 0 }, "end": { "line": 70, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 71, "column": 0 }, "end": { "line": 77, "column": 7 } } })) != null ? stack1 : "");
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  # \u2500\u2500 Quality Gate: TypeScript \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: " + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n    displayName: 'Quality Gate \u2014 TypeScript check'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n";
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  # \u2500\u2500 Quality Gate: ESLint \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: " + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n    displayName: 'Quality Gate \u2014 ESLint'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  # \u2500\u2500 Quality Gate: Unit Tests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: " + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n    displayName: 'Quality Gate \u2014 Unit tests'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  # \u2500\u2500 Quality Gate: Format Check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: " + container.escapeExpression(container.lambda((stack1 = (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n    displayName: 'Quality Gate \u2014 Format check'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  # \u2500\u2500 3. Token replacement (environment file transform) \u2500\u2500\u2500\u2500\n  - task: FileTransform@2\n    displayName: 'Token replacement \u2014 " + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + "'\n    inputs:\n      folderPath: '$(Build.SourcesDirectory)'\n      xmlTransformationRules: ''\n      jsonTargetFiles: '" + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + "'\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "4";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "3";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "5";
+  }, "11"), "12": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "distFolder") : stack1, depth0)) + "/browser";
+  }, "12"), "13": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "distFolder") : stack1, depth0));
+  }, "13"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "# ============================================================\n# PipeForge \u2014 Generated YAML CI Build Pipeline\n# Pipeline : " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + "\n# Project  : " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + "\n# Market   : " + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "market") : stack1) != null ? lookupProperty(stack1, "name") : stack1, depth0)) + " (" + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "market") : stack1) != null ? lookupProperty(stack1, "code") : stack1, depth0)) + ")\n# Env      : " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + "\n# " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "language") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 7, "column": 2 }, "end": { "line": 7, "column": 109 } } })) != null ? stack1 : "") + "\n# ============================================================\n\ntrigger:\n  branches:\n    include:\n      - " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "branchName") : stack1, depth0)) + "\n\npr: none\n\npool:\n  vmImage: 'ubuntu-latest'\n\nvariables:\n  - name: buildScript\n    value: '" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "buildScript") : stack1, depth0)) + "'\n  - name: pipelineName\n    value: '" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + "'\n  - name: nodeVersion\n    value: '" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "nodeVersion") : stack1, depth0)) + "'\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 27, "column": 0 }, "end": { "line": 34, "column": 7 } } })) != null ? stack1 : "") + "\nsteps:\n\n  # \u2500\u2500 1. Install Node.js \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - task: NodeTool@0\n    displayName: 'Use Node.js $(nodeVersion)'\n    inputs:\n      versionSpec: '$(nodeVersion)'\n\n  # \u2500\u2500 2. Install dependencies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: npm ci\n    displayName: 'npm ci'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qualityGates") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 49, "column": 0 }, "end": { "line": 78, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 79, "column": 0 }, "end": { "line": 87, "column": 7 } } })) != null ? stack1 : "") + "\n  # \u2500\u2500 " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.program(10, data, 0), "data": data, "loc": { "start": { "line": 89, "column": 7 }, "end": { "line": 89, "column": 63 } } })) != null ? stack1 : "") + ". Build \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - script: npm run build -- --configuration=$(buildScript)\n    displayName: 'npm run build (" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "buildScript") : stack1, depth0)) + ")'\n    workingDirectory: '$(Build.SourcesDirectory)'\n\n  # \u2500\u2500 " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.program(9, data, 0), "data": data, "loc": { "start": { "line": 94, "column": 7 }, "end": { "line": 94, "column": 63 } } })) != null ? stack1 : "") + ". Publish build artifact \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  - task: PublishBuildArtifacts@1\n    displayName: 'Publish artifact \u2014 $(pipelineName)'\n    inputs:\n      pathToPublish: '$(Build.SourcesDirectory)/" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "hasBrowserSubfolder") : stack1, { "name": "if", "hash": {}, "fn": container.program(12, data, 0), "inverse": container.program(13, data, 0), "data": data, "loc": { "start": { "line": 98, "column": 48 }, "end": { "line": 98, "column": 147 } } })) != null ? stack1 : "") + "'\n      artifactName: '$(pipelineName)'\n      publishLocation: 'Container'\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-appservice.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 TypeScript check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 ESLint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return `      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["` + container.escapeExpression((helper = (helper = lookupProperty(helpers, "envFilePath") || (depth0 != null ? lookupProperty(depth0, "envFilePath") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "envFilePath", "hash": {}, "data": data, "loc": { "start": { "line": 57, "column": 20 }, "end": { "line": 57, "column": 35 } } }) : helper)) + "\"]'\n        env:\n          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}\n          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "10"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 61, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 64, "column": 21 }, "end": { "line": 64, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to App Service\n        uses: azure/webapps-deploy@v2\n        with:\n          app-name: " + alias4((helper = (helper = lookupProperty(helpers, "appServiceName") || (depth0 != null ? lookupProperty(depth0, "appServiceName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "appServiceName", "hash": {}, "data": data, "loc": { "start": { "line": 69, "column": 20 }, "end": { "line": 69, "column": 38 } } }) : helper)) + "\n          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}\n          package: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 21 }, "end": { "line": 71, "column": 35 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 71, "column": 35 }, "end": { "line": 71, "column": 77 } } })) != null ? stack1 : "") + "\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-cloudflare-pages.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Type check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Lint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return (stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 54, "column": 0 }, "end": { "line": 58, "column": 9 } } })) != null ? stack1 : "";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Replace token \u2014 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + `
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#` + ((stack1 = alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) != null ? stack1 : "") + "#/${{ secrets." + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + " }}/g' 2>/dev/null || true\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "11"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 59, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 62, "column": 21 }, "end": { "line": 62, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to Cloudflare Pages\n        uses: cloudflare/pages-action@v1\n        with:\n          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}\n          projectName: " + alias4((helper = (helper = lookupProperty(helpers, "cloudflarePagesProject") || (depth0 != null ? lookupProperty(depth0, "cloudflarePagesProject") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "cloudflarePagesProject", "hash": {}, "data": data, "loc": { "start": { "line": 69, "column": 23 }, "end": { "line": 69, "column": 49 } } }) : helper)) + "\n          directory: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 70, "column": 23 }, "end": { "line": 70, "column": 37 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 70, "column": 37 }, "end": { "line": 70, "column": 79 } } })) != null ? stack1 : "") + "\n          gitHubToken: ${{ secrets.GITHUB_TOKEN }}\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-firebase.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Type check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Lint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return (stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 54, "column": 0 }, "end": { "line": 58, "column": 9 } } })) != null ? stack1 : "";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Replace token \u2014 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + `
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#` + ((stack1 = alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) != null ? stack1 : "") + "#/${{ secrets." + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + " }}/g' 2>/dev/null || true\n";
+  }, "10"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 59, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 62, "column": 21 }, "end": { "line": 62, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to Firebase Hosting\n        uses: FirebaseExtended/action-hosting-deploy@v0\n        with:\n          repoToken: ${{ secrets.GITHUB_TOKEN }}\n          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}\n          channelId: live\n          projectId: " + alias4((helper = (helper = lookupProperty(helpers, "firebaseProjectId") || (depth0 != null ? lookupProperty(depth0, "firebaseProjectId") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "firebaseProjectId", "hash": {}, "data": data, "loc": { "start": { "line": 70, "column": 21 }, "end": { "line": 70, "column": 42 } } }) : helper)) + "\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-ftp-cpanel.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 38, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 39, "column": 0 }, "end": { "line": 42, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 43, "column": 0 }, "end": { "line": 46, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 47, "column": 0 }, "end": { "line": 50, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 TypeScript check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 ESLint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return `      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          tokenPrefix: '#{'
+          tokenSuffix: '}#'
+          files: '["` + alias4((helper = (helper = lookupProperty(helpers, "envFilePath") || (depth0 != null ? lookupProperty(depth0, "envFilePath") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "envFilePath", "hash": {}, "data": data, "loc": { "start": { "line": 58, "column": 20 }, "end": { "line": 58, "column": 35 } } }) : helper)) + `"]'
+        env:
+          ENCRYPTION_IV: $` + alias4((helper = (helper = lookupProperty(helpers, "{{") || (depth0 != null ? lookupProperty(depth0, "{{") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "{{", "hash": {}, "data": data, "loc": { "start": { "line": 60, "column": 26 }, "end": { "line": 60, "column": 34 } } }) : helper)) + " secrets.ENCRYPTION_IV " + alias4((helper = (helper = lookupProperty(helpers, "}}") || (depth0 != null ? lookupProperty(depth0, "}}") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "}}", "hash": {}, "data": data, "loc": { "start": { "line": 60, "column": 57 }, "end": { "line": 60, "column": 65 } } }) : helper)) + "\n          ENCRYPTION_KEY: $" + alias4((helper = (helper = lookupProperty(helpers, "{{") || (depth0 != null ? lookupProperty(depth0, "{{") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "{{", "hash": {}, "data": data, "loc": { "start": { "line": 61, "column": 27 }, "end": { "line": 61, "column": 35 } } }) : helper)) + " secrets.ENCRYPTION_KEY " + alias4((helper = (helper = lookupProperty(helpers, "}}") || (depth0 != null ? lookupProperty(depth0, "}}") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "}}", "hash": {}, "data": data, "loc": { "start": { "line": 61, "column": 59 }, "end": { "line": 61, "column": 67 } } }) : helper)) + "\n\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "10"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 34, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 52, "column": 0 }, "end": { "line": 63, "column": 7 } } })) != null ? stack1 : "") + "      - run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 64, "column": 21 }, "end": { "line": 64, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy via FTP\n        uses: SamKirkland/FTP-Deploy-Action@v4.3.4\n        with:\n          server: $" + alias4((helper = (helper = lookupProperty(helpers, "{{") || (depth0 != null ? lookupProperty(depth0, "{{") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "{{", "hash": {}, "data": data, "loc": { "start": { "line": 69, "column": 19 }, "end": { "line": 69, "column": 27 } } }) : helper)) + " secrets.FTP_SERVER " + alias4((helper = (helper = lookupProperty(helpers, "}}") || (depth0 != null ? lookupProperty(depth0, "}}") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "}}", "hash": {}, "data": data, "loc": { "start": { "line": 69, "column": 47 }, "end": { "line": 69, "column": 55 } } }) : helper)) + "\n          username: $" + alias4((helper = (helper = lookupProperty(helpers, "{{") || (depth0 != null ? lookupProperty(depth0, "{{") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "{{", "hash": {}, "data": data, "loc": { "start": { "line": 70, "column": 21 }, "end": { "line": 70, "column": 29 } } }) : helper)) + " secrets.FTP_USERNAME " + alias4((helper = (helper = lookupProperty(helpers, "}}") || (depth0 != null ? lookupProperty(depth0, "}}") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "}}", "hash": {}, "data": data, "loc": { "start": { "line": 70, "column": 51 }, "end": { "line": 70, "column": 59 } } }) : helper)) + "\n          password: $" + alias4((helper = (helper = lookupProperty(helpers, "{{") || (depth0 != null ? lookupProperty(depth0, "{{") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "{{", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 21 }, "end": { "line": 71, "column": 29 } } }) : helper)) + " secrets.FTP_PASSWORD " + alias4((helper = (helper = lookupProperty(helpers, "}}") || (depth0 != null ? lookupProperty(depth0, "}}") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "}}", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 51 }, "end": { "line": 71, "column": 59 } } }) : helper)) + "\n          local-dir: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 72, "column": 23 }, "end": { "line": 72, "column": 37 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 72, "column": 37 }, "end": { "line": 72, "column": 79 } } })) != null ? stack1 : "") + "/\n          server-dir: " + alias4((helper = (helper = lookupProperty(helpers, "remotePath") || (depth0 != null ? lookupProperty(depth0, "remotePath") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "remotePath", "hash": {}, "data": data, "loc": { "start": { "line": 73, "column": 22 }, "end": { "line": 73, "column": 36 } } }) : helper)) + "/\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-github-pages.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 52, "column": 0 }, "end": { "line": 55, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Type check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Lint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return (stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 58, "column": 0 }, "end": { "line": 62, "column": 9 } } })) != null ? stack1 : "";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Replace token \u2014 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + `
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#` + ((stack1 = alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) != null ? stack1 : "") + "#/${{ secrets." + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + " }}/g' 2>/dev/null || true\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "11"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\n# Required for GitHub Pages deployment\npermissions:\n  contents: write\n\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 33, "column": 25 }, "end": { "line": 33, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 39, "column": 0 }, "end": { "line": 56, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 57, "column": 0 }, "end": { "line": 63, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 66, "column": 21 }, "end": { "line": 66, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to GitHub Pages\n        uses: peaceiris/actions-gh-pages@v3\n        with:\n          github_token: ${{ secrets.GITHUB_TOKEN }}\n          publish_dir: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 72, "column": 25 }, "end": { "line": 72, "column": 39 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 72, "column": 39 }, "end": { "line": 72, "column": 81 } } })) != null ? stack1 : "") + "\n          publish_branch: " + alias4((helper = (helper = lookupProperty(helpers, "ghPagesBranch") || (depth0 != null ? lookupProperty(depth0, "ghPagesBranch") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "ghPagesBranch", "hash": {}, "data": data, "loc": { "start": { "line": 73, "column": 26 }, "end": { "line": 73, "column": 43 } } }) : helper)) + "\n          force_orphan: true\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-netlify.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Type check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Lint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return (stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 54, "column": 0 }, "end": { "line": 58, "column": 9 } } })) != null ? stack1 : "";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Replace token \u2014 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + `
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#` + ((stack1 = alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) != null ? stack1 : "") + "#/${{ secrets." + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + " }}/g' 2>/dev/null || true\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "11"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 59, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 62, "column": 21 }, "end": { "line": 62, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to Netlify\n        uses: nwtgck/actions-netlify@v3\n        with:\n          publish-dir: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 67, "column": 25 }, "end": { "line": 67, "column": 39 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 67, "column": 39 }, "end": { "line": 67, "column": 81 } } })) != null ? stack1 : "") + "\n          production-branch: " + alias4((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 68, "column": 29 }, "end": { "line": 68, "column": 39 } } }) : helper)) + '\n          github-token: ${{ secrets.GITHUB_TOKEN }}\n          deploy-message: "Deploy from GitHub Actions"\n          enable-pull-request-comment: true\n          enable-commit-comment: true\n        env:\n          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}\n          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}\n';
+  }, "main"), "useData": true }),
+  "github-actions/gha-storage.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 TypeScript check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 ESLint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return `      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["` + container.escapeExpression((helper = (helper = lookupProperty(helpers, "envFilePath") || (depth0 != null ? lookupProperty(depth0, "envFilePath") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "envFilePath", "hash": {}, "data": data, "loc": { "start": { "line": 57, "column": 20 }, "end": { "line": 57, "column": 35 } } }) : helper)) + "\"]'\n        env:\n          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}\n          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "\n      - name: Restore protected files\n        run: |\n          az storage blob copy start-batch \\\n            --source-container '" + alias4((helper = (helper = lookupProperty(helpers, "protectedPathsContainer") || (depth0 != null ? lookupProperty(depth0, "protectedPathsContainer") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "protectedPathsContainer", "hash": {}, "data": data, "loc": { "start": { "line": 96, "column": 32 }, "end": { "line": 96, "column": 59 } } }) : helper)) + "' \\\n            --destination-container '$web' \\\n            --account-name " + alias4((helper = (helper = lookupProperty(helpers, "storageAccountName") || (depth0 != null ? lookupProperty(depth0, "storageAccountName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "storageAccountName", "hash": {}, "data": data, "loc": { "start": { "line": 98, "column": 27 }, "end": { "line": 98, "column": 49 } } }) : helper)) + "\n";
+  }, "11"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 61, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 64, "column": 21 }, "end": { "line": 64, "column": 36 } } }) : helper)) + "\n\n      - name: Azure Login\n        uses: azure/login@v2\n        with:\n          creds: ${{ secrets.AZURE_CREDENTIALS }}\n\n      - name: Clear storage\n        run: |\n          az storage blob delete-batch \\\n            --account-name " + alias4((helper = (helper = lookupProperty(helpers, "storageAccountName") || (depth0 != null ? lookupProperty(depth0, "storageAccountName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "storageAccountName", "hash": {}, "data": data, "loc": { "start": { "line": 74, "column": 27 }, "end": { "line": 74, "column": 49 } } }) : helper)) + " \\\n            --source '$web'\n\n      - name: Deploy to storage\n        run: |\n          az storage blob upload-batch \\\n            --account-name " + alias4((helper = (helper = lookupProperty(helpers, "storageAccountName") || (depth0 != null ? lookupProperty(depth0, "storageAccountName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "storageAccountName", "hash": {}, "data": data, "loc": { "start": { "line": 80, "column": 27 }, "end": { "line": 80, "column": 49 } } }) : helper)) + " \\\n            --destination '$web' \\\n            --source './" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 82, "column": 24 }, "end": { "line": 82, "column": 38 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 82, "column": 38 }, "end": { "line": 82, "column": 80 } } })) != null ? stack1 : "") + "' \\\n            --destination-path '" + alias4((helper = (helper = lookupProperty(helpers, "deploymentPath") || (depth0 != null ? lookupProperty(depth0, "deploymentPath") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "deploymentPath", "hash": {}, "data": data, "loc": { "start": { "line": 83, "column": 32 }, "end": { "line": 83, "column": 50 } } }) : helper)) + "' \\\n            --pattern '*.*'\n\n          az storage blob upload-batch \\\n            --account-name " + alias4((helper = (helper = lookupProperty(helpers, "storageAccountName") || (depth0 != null ? lookupProperty(depth0, "storageAccountName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "storageAccountName", "hash": {}, "data": data, "loc": { "start": { "line": 87, "column": 27 }, "end": { "line": 87, "column": 49 } } }) : helper)) + " \\\n            --destination '$web' \\\n            --source './" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 89, "column": 24 }, "end": { "line": 89, "column": 38 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 89, "column": 38 }, "end": { "line": 89, "column": 80 } } })) != null ? stack1 : "") + "' \\\n            --pattern '*.*'\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasProtectedPaths") : depth0, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 91, "column": 0 }, "end": { "line": 99, "column": 7 } } })) != null ? stack1 : "");
+  }, "main"), "useData": true }),
+  "github-actions/gha-swa.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 TypeScript check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 ESLint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return `      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["` + container.escapeExpression((helper = (helper = lookupProperty(helpers, "envFilePath") || (depth0 != null ? lookupProperty(depth0, "envFilePath") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "envFilePath", "hash": {}, "data": data, "loc": { "start": { "line": 57, "column": 20 }, "end": { "line": 57, "column": 35 } } }) : helper)) + "\"]'\n        env:\n          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}\n          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "10"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 61, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 64, "column": 21 }, "end": { "line": 64, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to Static Web App\n        uses: Azure/static-web-apps-deploy@v1\n        with:\n          azure_static_web_apps_api_token: ${{ secrets." + alias4((helper = (helper = lookupProperty(helpers, "swaSecretName") || (depth0 != null ? lookupProperty(depth0, "swaSecretName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "swaSecretName", "hash": {}, "data": data, "loc": { "start": { "line": 69, "column": 56 }, "end": { "line": 69, "column": 73 } } }) : helper)) + " }}\n          repo_token: ${{ secrets.GITHUB_TOKEN }}\n          action: upload\n          app_location: " + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 72, "column": 24 }, "end": { "line": 72, "column": 38 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 72, "column": 38 }, "end": { "line": 72, "column": 80 } } })) != null ? stack1 : "") + "\n          skip_app_build: true\n";
+  }, "main"), "useData": true }),
+  "github-actions/gha-vercel.yml.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  push:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 16 }, "end": { "line": 6, "column": 26 } } }) : helper)) + " ]\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  pull_request:\n    branches: [ " + container.escapeExpression((helper = (helper = lookupProperty(helpers, "branch") || (depth0 != null ? lookupProperty(depth0, "branch") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "branch", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 16 }, "end": { "line": 10, "column": 26 } } }) : helper)) + " ]\n";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "  workflow_dispatch:\n";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "  schedule:\n    - cron: '" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cronExpression") || (depth0 != null ? lookupProperty(depth0, "cronExpression") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cronExpression", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 13 }, "end": { "line": 17, "column": 31 } } }) : helper)) + "'\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 36, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 40, "column": 0 }, "end": { "line": 43, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 44, "column": 0 }, "end": { "line": 47, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 51, "column": 7 } } })) != null ? stack1 : "");
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Type check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "typescript") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Lint\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "lint") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Unit tests\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "tests") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Quality Gate \u2014 Format check\n        run: " + container.escapeExpression(container.lambda((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "format") : stack1) != null ? lookupProperty(stack1, "command") : stack1, depth0)) + "\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return (stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 54, "column": 0 }, "end": { "line": 58, "column": 9 } } })) != null ? stack1 : "";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "      - name: Replace token \u2014 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + `
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#` + ((stack1 = alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) != null ? stack1 : "") + "#/${{ secrets." + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + " }}/g' 2>/dev/null || true\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "11"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "name: " + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 6 }, "end": { "line": 1, "column": 22 } } }) : helper)) + "\n\non:\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "push") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 0 }, "end": { "line": 7, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "pr") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 0 }, "end": { "line": 11, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "manual") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 0 }, "end": { "line": 14, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "triggers") : depth0) != null ? lookupProperty(stack1, "schedule") : stack1, { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 0 }, "end": { "line": 18, "column": 7 } } })) != null ? stack1 : "") + "\njobs:\n  build-and-deploy:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '" + alias4((helper = (helper = lookupProperty(helpers, "nodeVersion") || (depth0 != null ? lookupProperty(depth0, "nodeVersion") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "nodeVersion", "hash": {}, "data": data, "loc": { "start": { "line": 29, "column": 25 }, "end": { "line": 29, "column": 40 } } }) : helper)) + "'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depth0 != null ? lookupProperty(depth0, "qualityGates") : depth0) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 35, "column": 0 }, "end": { "line": 52, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 59, "column": 7 } } })) != null ? stack1 : "") + "\n      - name: Build\n        run: npm run " + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 62, "column": 21 }, "end": { "line": 62, "column": 36 } } }) : helper)) + "\n\n      - name: Deploy to Vercel\n        uses: amondnet/vercel-action@v25\n        with:\n          vercel-token: ${{ secrets.VERCEL_TOKEN }}\n          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}\n          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}\n          working-directory: ./" + alias4((helper = (helper = lookupProperty(helpers, "distFolder") || (depth0 != null ? lookupProperty(depth0, "distFolder") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "distFolder", "hash": {}, "data": data, "loc": { "start": { "line": 70, "column": 31 }, "end": { "line": 70, "column": 45 } } }) : helper)) + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "hasBrowserSubfolder") : depth0, { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 70, "column": 45 }, "end": { "line": 70, "column": 87 } } })) != null ? stack1 : "") + "\n";
+  }, "main"), "useData": true }),
+  "github-actions/secrets-guide.md.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## Azure Credentials\n\n| Secret Name | Value |\n|---|---|\n| `AZURE_CREDENTIALS` | JSON output of: `az ad sp create-for-rbac --sdk-auth` |\n";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "## Token Replacement Secrets\n\n" + ((stack1 = lookupProperty(helpers, "if").call(depth0 != null ? depth0 : container.nullContext || {}, (stack1 = depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0) != null ? lookupProperty(stack1, "length") : stack1, { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.program(4, data, 0), "data": data, "loc": { "start": { "line": 31, "column": 0 }, "end": { "line": 39, "column": 7 } } })) != null ? stack1 : "");
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| Secret Name | Description |\n|---|---|\n" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "tokenMappings") : depth0, { "name": "each", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 34, "column": 0 }, "end": { "line": 36, "column": 9 } } })) != null ? stack1 : "");
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| `" + alias2(alias1(depth0 != null ? lookupProperty(depth0, "variableName") : depth0, depth0)) + "` | Value to replace `" + alias2(alias1(depth0 != null ? lookupProperty(depth0, "tokenName") : depth0, depth0)) + "` in environment files |\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "Add your environment token values as repository secrets.\n";
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## Storage Account\n\nNo additional secrets needed \u2014 deployment uses `AZURE_CREDENTIALS`.\n";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "## Static Web App Tokens\n\n| Secret Name | Value |\n|---|---|\n" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, depth0 != null ? lookupProperty(depth0, "swaSecrets") : depth0, { "name": "each", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 0 }, "end": { "line": 55, "column": 9 } } })) != null ? stack1 : "");
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| `" + alias2(alias1(depth0 != null ? lookupProperty(depth0, "secretName") : depth0, depth0)) + "` | SWA deployment token from Azure Portal \u2192 Static Web Apps \u2192 " + alias2(alias1(depth0 != null ? lookupProperty(depth0, "label") : depth0, depth0)) + " \u2192 Manage deployment token |\n";
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## App Service\n\n| Secret Name | Value |\n|---|---|\n| `AZURE_WEBAPP_PUBLISH_PROFILE` | Publish profile XML from Azure Portal \u2192 App Service \u2192 Download publish profile |\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## FTP / cPanel Credentials\n\n| Secret Name | Value |\n|---|---|\n| `FTP_SERVER` | Your FTP hostname (e.g. `ftp.yourdomain.com`) \u2014 found in cPanel \u2192 FTP Accounts |\n| `FTP_USERNAME` | Your FTP username (e.g. `deploy@yourdomain.com`) |\n| `FTP_PASSWORD` | Your FTP password |\n\n> **Security note:** Never store FTP credentials in your code or PipeForge.\n> Add them directly to GitHub: **Settings \u2192 Secrets and variables \u2192 Actions \u2192 New repository secret**\n\n### Where to find FTP credentials\n\n| Hosting Provider | Location |\n|---|---|\n| **SiteGround** | Site Tools \u2192 FTP Accounts |\n| **Hostinger** | hPanel \u2192 Files \u2192 FTP Accounts |\n| **GoDaddy** | cPanel \u2192 FTP Accounts |\n| **Bluehost** | cPanel \u2192 FTP Accounts |\n| **Namecheap** | cPanel \u2192 FTP Accounts |\n\nWe recommend creating a dedicated FTP account for deployments with access limited to your site directory.\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## Vercel Secrets\n\n| Secret Name | Value |\n|---|---|\n| `VERCEL_TOKEN` | Vercel account token from vercel.com \u2192 Settings \u2192 Tokens |\n| `VERCEL_ORG_ID` | Found in vercel.com \u2192 Settings \u2192 General |\n| `VERCEL_PROJECT_ID` | Found in your Vercel project settings |\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "## Netlify Secrets\n\n| Secret Name | Value |\n|---|---|\n| `NETLIFY_AUTH_TOKEN` | Netlify personal access token from app.netlify.com \u2192 User settings \u2192 Applications |\n| `NETLIFY_SITE_ID` | Your Netlify site ID (found in Site settings \u2192 General \u2192 Site ID) |\n";
+  }, "11"), "12": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "## Firebase Secrets\n\n| Secret Name | Value |\n|---|---|\n| `FIREBASE_SERVICE_ACCOUNT` | Firebase service account JSON \u2014 Firebase Console \u2192 Project Settings \u2192 Service accounts \u2192 Generate new private key |\n\n**Project ID configured:** `" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "firebaseProjectId") || (depth0 != null ? lookupProperty(depth0, "firebaseProjectId") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "firebaseProjectId", "hash": {}, "data": data, "loc": { "start": { "line": 117, "column": 28 }, "end": { "line": 117, "column": 49 } } }) : helper)) + "`\n\n> The service account requires the **Firebase Hosting Admin** role.\n";
+  }, "12"), "13": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "## GitHub Pages\n\nNo additional secrets required. GitHub Pages uses `GITHUB_TOKEN` which is automatically provided by GitHub Actions.\n\n**Publish branch configured:** `" + alias4((helper = (helper = lookupProperty(helpers, "ghPagesBranch") || (depth0 != null ? lookupProperty(depth0, "ghPagesBranch") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "ghPagesBranch", "hash": {}, "data": data, "loc": { "start": { "line": 127, "column": 32 }, "end": { "line": 127, "column": 49 } } }) : helper)) + "`\n\n> Ensure GitHub Pages is enabled in your repository: Settings \u2192 Pages \u2192 Source \u2192 Deploy from a branch \u2192 `" + alias4((helper = (helper = lookupProperty(helpers, "ghPagesBranch") || (depth0 != null ? lookupProperty(depth0, "ghPagesBranch") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "ghPagesBranch", "hash": {}, "data": data, "loc": { "start": { "line": 129, "column": 105 }, "end": { "line": 129, "column": 122 } } }) : helper)) + "`\n";
+  }, "13"), "14": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "## Cloudflare Pages Secrets\n\n| Secret Name | Value |\n|---|---|\n| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Cloudflare Pages edit permissions |\n| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID (found in the Cloudflare dashboard sidebar) |\n\n**Pages project configured:** `" + container.escapeExpression((helper = (helper = lookupProperty(helpers, "cloudflarePagesProject") || (depth0 != null ? lookupProperty(depth0, "cloudflarePagesProject") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "cloudflarePagesProject", "hash": {}, "data": data, "loc": { "start": { "line": 140, "column": 31 }, "end": { "line": 140, "column": 57 } } }) : helper)) + "`\n\n> Create the Cloudflare Pages project first in the Cloudflare dashboard before deploying.\n";
+  }, "14"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "# GitHub Secrets Required for " + alias4((helper = (helper = lookupProperty(helpers, "projectName") || (depth0 != null ? lookupProperty(depth0, "projectName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "projectName", "hash": {}, "data": data, "loc": { "start": { "line": 1, "column": 30 }, "end": { "line": 1, "column": 45 } } }) : helper)) + "\n\nAdd these secrets to your GitHub repository:\n**Settings \u2192 Secrets and variables \u2192 Actions \u2192 New repository secret**\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "storage-account", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 6 }, "end": { "line": 6, "column": 41 } } }), { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 6, "column": 0 }, "end": { "line": 12, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "static-web-app", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 13, "column": 6 }, "end": { "line": 13, "column": 40 } } }), { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 13, "column": 0 }, "end": { "line": 19, "column": 7 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "app-service", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 20, "column": 6 }, "end": { "line": 20, "column": 37 } } }), { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 20, "column": 0 }, "end": { "line": 26, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "useTokenReplacement") : depth0, { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 28, "column": 0 }, "end": { "line": 40, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "storage-account", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 42, "column": 6 }, "end": { "line": 42, "column": 41 } } }), { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 42, "column": 0 }, "end": { "line": 46, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "static-web-app", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 48, "column": 6 }, "end": { "line": 48, "column": 40 } } }), { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 48, "column": 0 }, "end": { "line": 56, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "app-service", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 58, "column": 6 }, "end": { "line": 58, "column": 37 } } }), { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 58, "column": 0 }, "end": { "line": 64, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "ftp-cpanel", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 66, "column": 6 }, "end": { "line": 66, "column": 36 } } }), { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 66, "column": 0 }, "end": { "line": 89, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "vercel", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 91, "column": 6 }, "end": { "line": 91, "column": 32 } } }), { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 91, "column": 0 }, "end": { "line": 99, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "netlify", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 101, "column": 6 }, "end": { "line": 101, "column": 33 } } }), { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 101, "column": 0 }, "end": { "line": 108, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "firebase", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 110, "column": 6 }, "end": { "line": 110, "column": 34 } } }), { "name": "if", "hash": {}, "fn": container.program(12, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 110, "column": 0 }, "end": { "line": 120, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "github-pages", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 122, "column": 6 }, "end": { "line": 122, "column": 38 } } }), { "name": "if", "hash": {}, "fn": container.program(13, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 122, "column": 0 }, "end": { "line": 130, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (lookupProperty(helpers, "eq") || depth0 && lookupProperty(depth0, "eq") || alias2).call(alias1, depth0 != null ? lookupProperty(depth0, "deployTarget") : depth0, "cloudflare-pages", { "name": "eq", "hash": {}, "data": data, "loc": { "start": { "line": 132, "column": 6 }, "end": { "line": 132, "column": 42 } } }), { "name": "if", "hash": {}, "fn": container.program(14, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 132, "column": 0 }, "end": { "line": 143, "column": 7 } } })) != null ? stack1 : "") + "\n---\n*Generated by PipeForge on " + alias4((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 146, "column": 27 }, "end": { "line": 146, "column": 42 } } }) : helper)) + "*\n";
+  }, "main"), "useData": true }),
+  "readme.md.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "/browser";
+  }, "0"), "1": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "Yes";
+  }, "1"), "2": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "No";
+  }, "2"), "3": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "- `" + container.escapeExpression(container.lambda(depth0, depth0)) + "`\n";
+  }, "3"), "4": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| " + alias4((helper = (helper = lookupProperty(helpers, "name") || (depth0 != null ? lookupProperty(depth0, "name") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "name", "hash": {}, "data": data, "loc": { "start": { "line": 35, "column": 2 }, "end": { "line": 35, "column": 10 } } }) : helper)) + " | `" + alias4((helper = (helper = lookupProperty(helpers, "code") || (depth0 != null ? lookupProperty(depth0, "code") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "code", "hash": {}, "data": data, "loc": { "start": { "line": 35, "column": 14 }, "end": { "line": 35, "column": 22 } } }) : helper)) + "` | " + ((stack1 = lookupProperty(helpers, "if").call(alias1, depth0 != null ? lookupProperty(depth0, "enabled") : depth0, { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.program(6, data, 0), "data": data, "loc": { "start": { "line": 35, "column": 26 }, "end": { "line": 35, "column": 71 } } })) != null ? stack1 : "") + " |\n";
+  }, "4"), "5": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "Enabled";
+  }, "5"), "6": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "Disabled";
+  }, "6"), "7": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "### Languages\n\n" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "languages") : stack1, { "name": "each", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 41, "column": 0 }, "end": { "line": 43, "column": 9 } } })) != null ? stack1 : "");
+  }, "7"), "8": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "- **" + alias4((helper = (helper = lookupProperty(helpers, "name") || (depth0 != null ? lookupProperty(depth0, "name") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "name", "hash": {}, "data": data, "loc": { "start": { "line": 42, "column": 4 }, "end": { "line": 42, "column": 12 } } }) : helper)) + "** (`" + alias4((helper = (helper = lookupProperty(helpers, "code") || (depth0 != null ? lookupProperty(depth0, "code") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "code", "hash": {}, "data": data, "loc": { "start": { "line": 42, "column": 17 }, "end": { "line": 42, "column": 25 } } }) : helper)) + "`)\n";
+  }, "8"), "9": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "Example: `QA-SAUDI-" + container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + "-EN`\n";
+  }, "9"), "10": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "Example: `QA-SAUDI-" + container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + "`\n";
+  }, "10"), "11": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = container.escapeExpression, alias4 = "function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| " + alias3((lookupProperty(helpers, "addOne") || depth0 && lookupProperty(depth0, "addOne") || alias2).call(alias1, data && lookupProperty(data, "index"), { "name": "addOne", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 2 }, "end": { "line": 71, "column": 19 } } })) + " | `" + alias3((helper = (helper = lookupProperty(helpers, "name") || (depth0 != null ? lookupProperty(depth0, "name") : depth0)) != null ? helper : alias2, typeof helper === alias4 ? helper.call(alias1, { "name": "name", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 23 }, "end": { "line": 71, "column": 31 } } }) : helper)) + "` | " + alias3((helper = (helper = lookupProperty(helpers, "type") || (depth0 != null ? lookupProperty(depth0, "type") : depth0)) != null ? helper : alias2, typeof helper === alias4 ? helper.call(alias1, { "name": "type", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 35 }, "end": { "line": 71, "column": 43 } } }) : helper)) + " | `" + alias3((helper = (helper = lookupProperty(helpers, "path") || (depth0 != null ? lookupProperty(depth0, "path") : depth0)) != null ? helper : alias2, typeof helper === alias4 ? helper.call(alias1, { "name": "path", "hash": {}, "data": data, "loc": { "start": { "line": 71, "column": 47 }, "end": { "line": 71, "column": 55 } } }) : helper)) + "` |\n";
+  }, "11"), "12": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "Language | ";
+  }, "12"), "13": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "---------|";
+  }, "13"), "14": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data, blockParams, depths) {
+    var stack1, helper, alias1 = depth0 != null ? depth0 : container.nullContext || {}, alias2 = container.hooks.helperMissing, alias3 = "function", alias4 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "| `" + alias4((helper = (helper = lookupProperty(helpers, "pipelineName") || (depth0 != null ? lookupProperty(depth0, "pipelineName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "pipelineName", "hash": {}, "data": data, "loc": { "start": { "line": 83, "column": 3 }, "end": { "line": 83, "column": 19 } } }) : helper)) + "` | " + alias4((helper = (helper = lookupProperty(helpers, "environment") || (depth0 != null ? lookupProperty(depth0, "environment") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "environment", "hash": {}, "data": data, "loc": { "start": { "line": 83, "column": 23 }, "end": { "line": 83, "column": 38 } } }) : helper)) + " | " + alias4(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "market") : depth0) != null ? lookupProperty(stack1, "name") : stack1, depth0)) + " | " + ((stack1 = lookupProperty(helpers, "if").call(alias1, (stack1 = depths[1] != null ? lookupProperty(depths[1], "config") : depths[1]) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(15, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 83, "column": 59 }, "end": { "line": 83, "column": 119 } } })) != null ? stack1 : "") + "`" + alias4((helper = (helper = lookupProperty(helpers, "branchName") || (depth0 != null ? lookupProperty(depth0, "branchName") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "branchName", "hash": {}, "data": data, "loc": { "start": { "line": 83, "column": 120 }, "end": { "line": 83, "column": 134 } } }) : helper)) + "` | `" + alias4((helper = (helper = lookupProperty(helpers, "buildScript") || (depth0 != null ? lookupProperty(depth0, "buildScript") : depth0)) != null ? helper : alias2, typeof helper === alias3 ? helper.call(alias1, { "name": "buildScript", "hash": {}, "data": data, "loc": { "start": { "line": 83, "column": 139 }, "end": { "line": 83, "column": 154 } } }) : helper)) + "` |\n";
+  }, "14"), "15": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "language") : depth0) != null ? lookupProperty(stack1, "name") : stack1, depth0)) + " | ";
+  }, "15"), "16": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "### Token Replacement\n\nToken replacement is **enabled** for this project.\n\n- **Environment file**: `" + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "environmentFilePath") : stack1, depth0)) + "`\n- **Secret variable names**: `" + alias2(alias1((stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "secretVariableNames") : stack1, depth0)) + "`\n\nThe `FileTransform@2` task is included in build pipelines. Ensure all secret variables listed above are defined as secret pipeline variables before running a build.\n";
+  }, "16"), "17": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    return "### Token Replacement\n\nToken replacement is **disabled** for this project. No `FileTransform` task is included in the build pipelines.\n";
+  }, "17"), "18": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "### Downstream Pipeline Trigger\n\nAfter each successful deployment, a downstream pipeline trigger is configured.\n\n- **Trigger Pipeline ID**: `" + container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineId") : stack1, depth0)) + "`\n\nEnsure the `System.AccessToken` has permission to queue builds in the target pipeline.\n";
+  }, "18"), "19": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "### Protected Files Setup\n\nCertain files are preserved across deployments by backing them up to a separate container and restoring after each deploy.\n\n**Backup container:** `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "protectedPathsContainer") : stack1, depth0)) + "`\n\n**Protected paths:**\n" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : container.nullContext || {}, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "protectedPaths") : stack1, { "name": "each", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 156, "column": 0 }, "end": { "line": 158, "column": 9 } } })) != null ? stack1 : "") + "\n**One-time setup** \u2014 create the backup container and upload your protected files:\n\n```bash\n# Create the backup container\naz storage container create \\\n  --name '" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "protectedPathsContainer") : stack1, depth0)) + "' \\\n  --account-name <YOUR_STORAGE_ACCOUNT>\n\n# Upload each protected file (repeat for each path)\naz storage blob upload \\\n  --container-name '" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "protectedPathsContainer") : stack1, depth0)) + "' \\\n  --name '<PATH>' \\\n  --file '<LOCAL_FILE>' \\\n  --account-name <YOUR_STORAGE_ACCOUNT>\n```\n\nAfter setup, every deployment will automatically restore these files from the backup container to `$web`.\n";
+  }, "19"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data, blockParams, depths) {
+    var stack1, helper, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return "# " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + " \u2014 Azure DevOps Pipelines\n\n> Generated by **PipeForge** on " + alias2((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(alias3, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 3, "column": 32 }, "end": { "line": 3, "column": 47 } } }) : helper)) + "\n\n---\n\n## Project Overview\n\n| Field | Value |\n|-------|-------|\n| **Project Name** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + "` |\n| **Repository** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "repositoryName") : stack1, depth0)) + "` |\n| **ADO Organization** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoOrganization") : stack1, depth0)) + "` |\n| **ADO Project** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + "` |\n| **Node Version** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "nodeVersion") : stack1, depth0)) + "` |\n| **Dist Folder** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "distFolder") : stack1, depth0)) + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "hasBrowserSubfolder") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 16, "column": 42 }, "end": { "line": 16, "column": 91 } } })) != null ? stack1 : "") + "` |\n| **Deploy Target** | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "deployTarget") : stack1, depth0)) + "` |\n| **Multi-Language** | `" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(1, data, 0, blockParams, depths), "inverse": container.program(2, data, 0, blockParams, depths), "data": data, "loc": { "start": { "line": 18, "column": 24 }, "end": { "line": 18, "column": 74 } } })) != null ? stack1 : "") + "` |\n\n---\n\n## Scope\n\n### Environments\n\n" + ((stack1 = lookupProperty(helpers, "each").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "environments") : stack1, { "name": "each", "hash": {}, "fn": container.program(3, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 26, "column": 0 }, "end": { "line": 28, "column": 9 } } })) != null ? stack1 : "") + "\n### Markets\n\n| Name | Code | Status |\n|------|------|--------|\n" + ((stack1 = lookupProperty(helpers, "each").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "markets") : stack1, { "name": "each", "hash": {}, "fn": container.program(4, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 34, "column": 0 }, "end": { "line": 36, "column": 9 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(7, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 38, "column": 0 }, "end": { "line": 44, "column": 7 } } })) != null ? stack1 : "") + "\n---\n\n## Pipeline Naming Convention\n\nAll pipelines follow the pattern:\n\n```\n{ENV}-{MARKET}-{MFE}-{LANG}\n```\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(9, data, 0, blockParams, depths), "inverse": container.program(10, data, 0, blockParams, depths), "data": data, "loc": { "start": { "line": 56, "column": 0 }, "end": { "line": 60, "column": 7 } } })) != null ? stack1 : "") + "\n---\n\n## Generated Files\n\nThe following " + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "generatedFiles") : depth0) != null ? lookupProperty(stack1, "length") : stack1, depth0)) + " files were generated:\n\n| # | File Name | Type | Path |\n|---|-----------|------|------|\n" + ((stack1 = lookupProperty(helpers, "each").call(alias3, depth0 != null ? lookupProperty(depth0, "generatedFiles") : depth0, { "name": "each", "hash": {}, "fn": container.program(11, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 70, "column": 0 }, "end": { "line": 72, "column": 9 } } })) != null ? stack1 : "") + "\n---\n\n## Pipeline Combinations\n\nEach combination maps to one build pipeline and one release pipeline:\n\n| Pipeline Name | Environment | Market | " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(12, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 80, "column": 41 }, "end": { "line": 80, "column": 89 } } })) != null ? stack1 : "") + "Branch | Build Script |\n|---------------|-------------|--------|" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "isMultiLanguage") : stack1, { "name": "if", "hash": {}, "fn": container.program(13, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 81, "column": 40 }, "end": { "line": 81, "column": 87 } } })) != null ? stack1 : "") + "--------|--------------|\n" + ((stack1 = lookupProperty(helpers, "each").call(alias3, depth0 != null ? lookupProperty(depth0, "combinations") : depth0, { "name": "each", "hash": {}, "fn": container.program(14, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 82, "column": 0 }, "end": { "line": 84, "column": 9 } } })) != null ? stack1 : "") + "\n---\n\n## How to Import into Azure DevOps\n\n### YAML Pipelines (build-pipeline.yaml)\n\n1. In Azure DevOps, navigate to **Pipelines > Pipelines**.\n2. Click **New pipeline**.\n3. Select **Azure Repos Git** (or your repository source).\n4. Choose **Existing Azure Pipelines YAML file**.\n5. Select the branch and point to the generated `.yaml` file.\n6. Click **Continue**, then **Save and run**.\n\n### Classic JSON Pipelines (build-pipeline.json / release-*.json)\n\n#### Build (Classic JSON)\n\n1. Navigate to **Pipelines > Pipelines**.\n2. Click **New pipeline** and switch to the Classic Editor.\n3. Use the **Import** option (three-dot menu) to upload the `build-pipeline.json` file.\n4. Review the imported pipeline, fix any pending service connection references, and save.\n\n#### Release (Classic JSON)\n\n1. Navigate to **Pipelines > Releases**.\n2. Click **New** > **Import release pipeline**.\n3. Upload the `release-*.json` file for the corresponding combination.\n4. After importing:\n   - Re-link the artifact source to the correct build pipeline.\n   - Verify service connection `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + "` is accessible.\n   - Set any secret variable values (they are not exported in the JSON).\n5. Save and create a release to validate the configuration.\n\n---\n\n## Configuration Notes\n\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "tokenReplacement") : stack1) != null ? lookupProperty(stack1, "enabled") : stack1, { "name": "if", "hash": {}, "fn": container.program(16, data, 0, blockParams, depths), "inverse": container.program(17, data, 0, blockParams, depths), "data": data, "loc": { "start": { "line": 123, "column": 0 }, "end": { "line": 136, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineAfterDeploy") : stack1, { "name": "if", "hash": {}, "fn": container.program(18, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 138, "column": 0 }, "end": { "line": 146, "column": 7 } } })) != null ? stack1 : "") + "\n" + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "protectedPaths") : stack1) != null ? lookupProperty(stack1, "length") : stack1, { "name": "if", "hash": {}, "fn": container.program(19, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 148, "column": 0 }, "end": { "line": 177, "column": 7 } } })) != null ? stack1 : "") + "\n### Service Connection\n\nAll Azure tasks reference service connection: **`" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + "`**\n\nVerify this service connection exists in your ADO project under **Project Settings > Service connections** before importing any pipeline.\n\n---\n\n## QA vs Production Branches\n\n| Environment | Branch |\n|-------------|--------|\n| QA | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "qaBranch") : stack1, depth0)) + "` |\n| PROD | `" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "productionBranch") : stack1, depth0)) + "` |\n\n---\n\n## Troubleshooting\n\n### Pipeline fails on npm ci\n\nThis usually means your package-lock.json is out of sync with package.json.\n\nResolution:\n  1. Delete package-lock.json from your project root\n  2. Delete the node_modules folder\n  3. Run: npm install\n  4. Commit the newly generated package-lock.json\n  5. Push and re-run the pipeline\n\nWhy npm ci instead of npm install?\nnpm ci is faster and stricter in CI environments. It fails immediately\nif package-lock.json is missing or out of sync, providing a clear signal.\nAlways commit your package-lock.json to the repository.\n\n---\n\n*This README was auto-generated by PipeForge. Do not edit manually \u2014 regenerate from the PipeForge wizard if changes are needed.*\n";
+  }, "main"), "useData": true, "useDepths": true }),
+  "release-appservice.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n            {\n              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",\n              "version": "0.*",\n              "name": "Trigger downstream pipeline",\n              "refName": "TriggerDownstreamPipeline",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "waitForCompletion": "false",\n                "buildDefinition": "' + container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineId") : stack1, depth0)) + '",\n                "queueBuildForUserThatTriggeredBuild": "true",\n                "ignoreSslCertificateErrors": "false",\n                "useSameSourceVersion": "false",\n                "useCustomSourceVersion": "false",\n                "buildParameters": "",\n                "storeInEnvironment": "false",\n                "authenticationMethod": "OAuth Token",\n                "password": "$(System.AccessToken)",\n                "enableSecureParameters": "false"\n              }\n            }';
+  }, "0"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, alias4 = container.hooks.helperMissing, alias5 = "function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return '{\n  "id": -1,\n  "name": "RELEASE-' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n  "type": 1,\n  "quality": 1,\n  "path": "\\\\",\n  "createdOn": "' + alias2((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 7, "column": 16 }, "end": { "line": 7, "column": 31 } } }) : helper)) + '",\n  "project": {\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n  },\n  "variables": {\n    "appServiceName": {\n      "value": "' + alias2((helper = (helper = lookupProperty(helpers, "appServiceName") || (depth0 != null ? lookupProperty(depth0, "appServiceName") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "appServiceName", "hash": {}, "data": data, "loc": { "start": { "line": 13, "column": 16 }, "end": { "line": 13, "column": 34 } } }) : helper)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "deploymentPath": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "deploymentPath") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "projectName": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "serviceConnectionId": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }\n  },\n  "variableGroups": [],\n  "environments": [\n    {\n      "id": 1,\n      "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + '",\n      "rank": 1,\n      "owner": {\n        "displayName": "PipeForge"\n      },\n      "variables": {},\n      "variableGroups": [],\n      "preDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 1\n        }\n      },\n      "postDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 2\n        }\n      },\n      "deployPhases": [\n        {\n          "deploymentInput": {\n            "parallelExecution": {\n              "parallelExecutionType": 0\n            },\n            "agentSpecification": {\n              "identifier": "ubuntu-latest"\n            },\n            "skipArtifactsDownload": false,\n            "artifactsDownloadInput": {\n              "downloadInputs": [\n                {\n                  "artifactItems": [],\n                  "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                  "artifactType": "Build",\n                  "artifactDownloadMode": "All"\n                }\n              ]\n            },\n            "queueId": 0,\n            "demands": [],\n            "enableAccessToken": false,\n            "timeoutInMinutes": 0,\n            "jobCancelTimeoutInMinutes": 1,\n            "condition": "succeeded()",\n            "overrideInputs": {}\n          },\n          "rank": 1,\n          "phaseType": 1,\n          "name": "Agent job",\n          "refName": "Job_1",\n          "workflowTasks": [\n\n            {\n              "taskId": "497d490f-eea7-4f2b-ab94-48d9c1acdcb1",\n              "version": "4.*",\n              "name": "Azure App Service Deploy \u2014 ' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n              "refName": "AzureRmWebAppDeployment",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "ConnectionType": "AzureRM",\n                "ConnectedServiceName": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n                "PublishProfilePath": "$(System.DefaultWorkingDirectory)/**/*.pubxml",\n                "PublishProfilePassword": "",\n                "WebAppKind": "webApp",\n                "WebAppName": "$(appServiceName)",\n                "DeployToSlotOrASEFlag": "false",\n                "ResourceGroupName": "",\n                "SlotName": "production",\n                "VirtualApplication": "",\n                "Package": "$(System.DefaultWorkingDirectory)/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '/**/*.zip",\n                "packageForLinux": "$(System.DefaultWorkingDirectory)/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '/**/*.zip",\n                "RuntimeStack": "",\n                "StartupCommand": "",\n                "ScriptType": "",\n                "InlineScript": ":: You can provide your deployment commands here. One command per line.",\n                "WebConfigParameters": "",\n                "AppSettings": "",\n                "ConfigurationSettings": "",\n                "enableCustomDeployment": "false",\n                "DeploymentType": "webDeploy",\n                "TakeAppOfflineFlag": "true",\n                "UseWebDeploy": "false",\n                "ExcludeFilesFromAppDataFlag": "true",\n                "AdditionalArguments": "-retryAttempts:6 -retryInterval:10000",\n                "RenameFilesFlag": "true",\n                "RemoveAdditionalFilesFlag": "false",\n                "enableXmlTransform": "false",\n                "enableXmlVariableSubstitution": "false",\n                "JSONFiles": ""\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineAfterDeploy") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 158, "column": 13 }, "end": { "line": 187, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
+  }, "main"), "useData": true }),
+  "release-storage.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 restore protected files",\n              "refName": "AzureCLI_Restore_Protected",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias1(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern '$(deploymentPath)/*'",
-                "addSpnToEnvironment": "false",
-                "useGlobalConfig": "false",
-                "cwd": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStandardError": "false",
-                "visibleAzLogin": "true"
-              }
-            },
-
-            {{! \u2500\u2500 Task 2: Upload blobs to primary deployment path \u2500\u2500 }}
-            {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
-              "name": "Azure CLI \u2014 upload blobs to primary path",
-              "refName": "AzureCLI_Upload_Primary",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
-                "scriptType": "bash",
-                "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob upload-batch --destination '$web/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
-                "addSpnToEnvironment": "false",
-                "useGlobalConfig": "false",
-                "cwd": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStandardError": "false",
-                "visibleAzLogin": "true"
-              }
-            },
-
-            {{! \u2500\u2500 Task 3: Delete existing blobs (versioned path) \u2500\u2500 }}
-            {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
-              "name": "Azure CLI \u2014 delete blobs at versioned path",
-              "refName": "AzureCLI_Delete_Versioned",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
-                "scriptType": "bash",
-                "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern 'v/$(deploymentPath)/*'",
-                "addSpnToEnvironment": "false",
-                "useGlobalConfig": "false",
-                "cwd": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStandardError": "false",
-                "visibleAzLogin": "true"
-              }
-            },
-
-            {{! \u2500\u2500 Task 4: Upload blobs to versioned path \u2500\u2500 }}
-            {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
-              "name": "Azure CLI \u2014 upload blobs to versioned path",
-              "refName": "AzureCLI_Upload_Versioned",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
-                "scriptType": "bash",
-                "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob upload-batch --destination '$web/v/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
-                "addSpnToEnvironment": "false",
-                "useGlobalConfig": "false",
-                "cwd": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStandardError": "false",
-                "visibleAzLogin": "true"
-              }
-            }{{#if hasProtectedPaths}},
-
-            {{! \u2500\u2500 Task 5: Restore protected files from backup container \u2500\u2500 }}
-            {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
-              "name": "Azure CLI \u2014 restore protected files",
-              "refName": "AzureCLI_Restore_Protected",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
-                "scriptType": "bash",
-                "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob copy start-batch --source-container '{{protectedPathsContainer}}' --destination-container '$web' --account-name $(storageAccountName)",
+                "inlineScript": "az storage blob copy start-batch --source-container '` + alias1((helper = (helper = lookupProperty(helpers, "protectedPathsContainer") || (depth0 != null ? lookupProperty(depth0, "protectedPathsContainer") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "protectedPathsContainer", "hash": {}, "data": data, "loc": { "start": { "line": 238, "column": 86 }, "end": { "line": 238, "column": 113 } } }) : helper)) + `' --destination-container '$web' --account-name $(storageAccountName)",
                 "addSpnToEnvironment": "false",
                 "useGlobalConfig": "false",
                 "cwd": "$(System.DefaultWorkingDirectory)",
                 "failOnStandardError": "false",
                 "visibleAzLogin": "true"
               }
-            }{{/if}}
-
-          ]
-        }
-      ],
-      "environmentOptions": {
-        "emailNotificationType": "OnlyOnFailure",
-        "emailRecipients": "release.environment.owner;release.creator",
-        "skipArtifactsDownload": false,
-        "timeoutInMinutes": 0,
-        "enableAccessToken": false,
-        "publishDeploymentStatus": true,
-        "badgeEnabled": false,
-        "autoLinkWorkItems": false,
-        "pullRequestDeploymentEnabled": false
-      },
-      "demands": [],
-      "conditions": [
-        {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
-          "value": ""
-        }
-      ],
-      "executionPolicy": {
-        "concurrencyCount": 1,
-        "queueDepthCount": 0
-      },
-      "schedules": [],
-      "retentionPolicy": {
-        "daysToKeep": 30,
-        "releasesToKeep": 3,
-        "retainBuild": true
-      },
-      "processParameters": {},
-      "properties": {}
-    }
-  ],
-  "artifacts": [
-    {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
-  "releaseNameFormat": "Release-$(rev:r)",
-  "tags": [],
-  "properties": {}
-}
-`,
-  "release-swa.json.hbs": `{
-  "id": -1,
-  "name": "RELEASE-{{combination.pipelineName}}",
-  "type": 1,
-  "quality": 1,
-  "path": "\\\\",
-  "createdOn": "{{generatedAt}}",
-  "project": {
-    "name": "{{config.adoProjectName}}"
-  },
-  "variables": {
-    "swaDeploymentToken": {
-      "value": "{{swaDeploymentToken}}",
-      "allowOverride": false,
-      "isSecret": true
-    },
-    "deploymentPath": {
-      "value": "{{combination.deploymentPath}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "projectName": {
-      "value": "{{config.projectName}}",
-      "allowOverride": false,
-      "isSecret": false
-    },
-    "serviceConnectionId": {
-      "value": "{{config.serviceConnectionId}}",
-      "allowOverride": false,
-      "isSecret": false
-    }
-  },
-  "variableGroups": [],
-  "environments": [
-    {
-      "id": 1,
-      "name": "{{combination.environment}}",
-      "rank": 1,
-      "owner": {
-        "displayName": "PipeForge"
-      },
-      "variables": {},
-      "variableGroups": [],
-      "preDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 1
-        }
-      },
-      "postDeployApprovals": {
-        "approvals": [
-          {
-            "rank": 1,
-            "isAutomated": true,
-            "isNotificationOn": false
-          }
-        ],
-        "approvalOptions": {
-          "requiredApproverCount": null,
-          "releaseCreatorCanBeApprover": false,
-          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,
-          "enforceIdentityRevalidation": false,
-          "timeoutInMinutes": 0,
-          "executionOrder": 2
-        }
-      },
-      "deployPhases": [
-        {
-          "deploymentInput": {
-            "parallelExecution": {
-              "parallelExecutionType": 0
-            },
-            "agentSpecification": {
-              "identifier": "ubuntu-latest"
-            },
-            "skipArtifactsDownload": false,
-            "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
-            },
-            "queueId": 0,
-            "demands": [],
-            "enableAccessToken": false,
-            "timeoutInMinutes": 0,
-            "jobCancelTimeoutInMinutes": 1,
-            "condition": "succeeded()",
-            "overrideInputs": {}
-          },
-          "rank": 1,
-          "phaseType": 1,
-          "name": "Agent job",
-          "refName": "Job_1",
-          "workflowTasks": [
-
-            {{! \u2500\u2500 Task 1: Install SWA CLI \u2500\u2500 }}
-            {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "version": "2.*",
-              "name": "Install @azure/static-web-apps-cli",
-              "refName": "InstallSwaCli",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "script": "npm install -g @azure/static-web-apps-cli",
-                "workingDirectory": "",
-                "failOnStderr": "false"
-              }
-            },
-
-            {{! \u2500\u2500 Task 2: Deploy to Static Web App \u2500\u2500 }}
-            {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "version": "2.*",
-              "name": "SWA Deploy \u2014 {{combination.pipelineName}}",
-              "refName": "SWA_Deploy",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "script": "swa deploy . --deployment-token $(swaDeploymentToken) --env {{combination.environment}} --no-use-keychain",
-                "workingDirectory": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStderr": "false"
-              }
-            }{{#if config.triggerPipelineAfterDeploy}},
-
-            {{! \u2500\u2500 Task 3 (conditional): Trigger downstream pipeline \u2500\u2500 }}
-            {
-              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
-              "version": "0.*",
-              "name": "Trigger downstream pipeline",
-              "refName": "TriggerDownstreamPipeline",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "waitForCompletion": "false",
-                "buildDefinition": "{{config.triggerPipelineId}}",
-                "queueBuildForUserThatTriggeredBuild": "true",
-                "ignoreSslCertificateErrors": "false",
-                "useSameSourceVersion": "false",
-                "useCustomSourceVersion": "false",
-                "buildParameters": "",
-                "storeInEnvironment": "false",
-                "authenticationMethod": "OAuth Token",
-                "password": "$(System.AccessToken)",
-                "enableSecureParameters": "false"
-              }
-            }{{/if}}
-
-          ]
-        }
-      ],
-      "environmentOptions": {
-        "emailNotificationType": "OnlyOnFailure",
-        "emailRecipients": "release.environment.owner;release.creator",
-        "skipArtifactsDownload": false,
-        "timeoutInMinutes": 0,
-        "enableAccessToken": false,
-        "publishDeploymentStatus": true,
-        "badgeEnabled": false,
-        "autoLinkWorkItems": false,
-        "pullRequestDeploymentEnabled": false
-      },
-      "demands": [],
-      "conditions": [
-        {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
-          "value": ""
-        }
-      ],
-      "executionPolicy": {
-        "concurrencyCount": 1,
-        "queueDepthCount": 0
-      },
-      "schedules": [],
-      "retentionPolicy": {
-        "daysToKeep": 30,
-        "releasesToKeep": 3,
-        "retainBuild": true
-      },
-      "processParameters": {},
-      "properties": {}
-    }
-  ],
-  "artifacts": [
-    {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
-  "releaseNameFormat": "Release-$(rev:r)",
-  "tags": [],
-  "properties": {}
-}
-`,
-  "github-actions/gha-appservice.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 TypeScript check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 ESLint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-{{#if useTokenReplacement}}
-      - name: Replace tokens
-        uses: cschleiden/replace-tokens@v1
-        with:
-          files: '["{{envFilePath}}"]'
-        env:
-          ENCRYPTION_IV: $\\{{ secrets.ENCRYPTION_IV }}
-          ENCRYPTION_KEY: $\\{{ secrets.ENCRYPTION_KEY }}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: {{appServiceName}}
-          publish-profile: $\\{{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-`,
-  "github-actions/gha-ftp-cpanel.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 TypeScript check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 ESLint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-{{#if useTokenReplacement}}
-      - name: Replace tokens
-        uses: cschleiden/replace-tokens@v1
-        with:
-          tokenPrefix: '#{'
-          tokenSuffix: '}#'
-          files: '["{{envFilePath}}"]'
-        env:
-          ENCRYPTION_IV: \${{"{{"}} secrets.ENCRYPTION_IV {{"}}"}}
-          ENCRYPTION_KEY: \${{"{{"}} secrets.ENCRYPTION_KEY {{"}}"}}
-
-{{/if}}
-      - run: npm run {{buildScript}}
-
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: \${{"{{"}} secrets.FTP_SERVER {{"}}"}}
-          username: \${{"{{"}} secrets.FTP_USERNAME {{"}}"}}
-          password: \${{"{{"}} secrets.FTP_PASSWORD {{"}}"}}
-          local-dir: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}/
-          server-dir: {{remotePath}}/
-`,
-  "github-actions/gha-storage.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 TypeScript check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 ESLint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-{{#if useTokenReplacement}}
-      - name: Replace tokens
-        uses: cschleiden/replace-tokens@v1
-        with:
-          files: '["{{envFilePath}}"]'
-        env:
-          ENCRYPTION_IV: $\\{{ secrets.ENCRYPTION_IV }}
-          ENCRYPTION_KEY: $\\{{ secrets.ENCRYPTION_KEY }}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: $\\{{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Clear storage
-        run: |
-          az storage blob delete-batch \\
-            --account-name {{storageAccountName}} \\
-            --source '$web'
-
-      - name: Deploy to storage
-        run: |
-          az storage blob upload-batch \\
-            --account-name {{storageAccountName}} \\
-            --destination '$web' \\
-            --source './{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}' \\
-            --destination-path '{{deploymentPath}}' \\
-            --pattern '*.*'
-
-          az storage blob upload-batch \\
-            --account-name {{storageAccountName}} \\
-            --destination '$web' \\
-            --source './{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}' \\
-            --pattern '*.*'
-{{#if hasProtectedPaths}}
-
-      - name: Restore protected files
-        run: |
-          az storage blob copy start-batch \\
-            --source-container '{{protectedPathsContainer}}' \\
-            --destination-container '$web' \\
-            --account-name {{storageAccountName}}
-{{/if}}
-`,
-  "github-actions/gha-swa.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 TypeScript check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 ESLint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-{{#if useTokenReplacement}}
-      - name: Replace tokens
-        uses: cschleiden/replace-tokens@v1
-        with:
-          files: '["{{envFilePath}}"]'
-        env:
-          ENCRYPTION_IV: $\\{{ secrets.ENCRYPTION_IV }}
-          ENCRYPTION_KEY: $\\{{ secrets.ENCRYPTION_KEY }}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to Static Web App
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: $\\{{ secrets.{{swaSecretName}} }}
-          repo_token: $\\{{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: {{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-          skip_app_build: true
-`,
-  "github-actions/secrets-guide.md.hbs": `# GitHub Secrets Required for {{projectName}}
-
-Add these secrets to your GitHub repository:
-**Settings \u2192 Secrets and variables \u2192 Actions \u2192 New repository secret**
-
-{{#if (eq deployTarget "storage-account")}}
-## Azure Credentials
-
-| Secret Name | Value |
-|---|---|
-| \`AZURE_CREDENTIALS\` | JSON output of: \`az ad sp create-for-rbac --sdk-auth\` |
-{{/if}}
-{{#if (eq deployTarget "static-web-app")}}
-## Azure Credentials
-
-| Secret Name | Value |
-|---|---|
-| \`AZURE_CREDENTIALS\` | JSON output of: \`az ad sp create-for-rbac --sdk-auth\` |
-{{/if}}
-{{#if (eq deployTarget "app-service")}}
-## Azure Credentials
-
-| Secret Name | Value |
-|---|---|
-| \`AZURE_CREDENTIALS\` | JSON output of: \`az ad sp create-for-rbac --sdk-auth\` |
-{{/if}}
-
-{{#if useTokenReplacement}}
-## Token Replacement Secrets
-
-{{#if tokenMappings.length}}
-| Secret Name | Description |
-|---|---|
-{{#each tokenMappings}}
-| \`{{this.variableName}}\` | Value to replace \`{{this.tokenName}}\` in environment files |
-{{/each}}
-{{else}}
-Add your environment token values as repository secrets.
-{{/if}}
-{{/if}}
-
-{{#if (eq deployTarget "storage-account")}}
-## Storage Account
-
-No additional secrets needed \u2014 deployment uses \`AZURE_CREDENTIALS\`.
-{{/if}}
-
-{{#if (eq deployTarget "static-web-app")}}
-## Static Web App Tokens
-
-| Secret Name | Value |
-|---|---|
-{{#each swaSecrets}}
-| \`{{this.secretName}}\` | SWA deployment token from Azure Portal \u2192 Static Web Apps \u2192 {{this.label}} \u2192 Manage deployment token |
-{{/each}}
-{{/if}}
-
-{{#if (eq deployTarget "app-service")}}
-## App Service
-
-| Secret Name | Value |
-|---|---|
-| \`AZURE_WEBAPP_PUBLISH_PROFILE\` | Publish profile XML from Azure Portal \u2192 App Service \u2192 Download publish profile |
-{{/if}}
-
-{{#if (eq deployTarget "ftp-cpanel")}}
-## FTP / cPanel Credentials
-
-| Secret Name | Value |
-|---|---|
-| \`FTP_SERVER\` | Your FTP hostname (e.g. \`ftp.yourdomain.com\`) \u2014 found in cPanel \u2192 FTP Accounts |
-| \`FTP_USERNAME\` | Your FTP username (e.g. \`deploy@yourdomain.com\`) |
-| \`FTP_PASSWORD\` | Your FTP password |
-
-> **Security note:** Never store FTP credentials in your code or PipeForge.
-> Add them directly to GitHub: **Settings \u2192 Secrets and variables \u2192 Actions \u2192 New repository secret**
-
-### Where to find FTP credentials
-
-| Hosting Provider | Location |
-|---|---|
-| **SiteGround** | Site Tools \u2192 FTP Accounts |
-| **Hostinger** | hPanel \u2192 Files \u2192 FTP Accounts |
-| **GoDaddy** | cPanel \u2192 FTP Accounts |
-| **Bluehost** | cPanel \u2192 FTP Accounts |
-| **Namecheap** | cPanel \u2192 FTP Accounts |
-
-We recommend creating a dedicated FTP account for deployments with access limited to your site directory.
-{{/if}}
-
-{{#if (eq deployTarget "vercel")}}
-## Vercel Secrets
-
-| Secret Name | Value |
-|---|---|
-| \`VERCEL_TOKEN\` | Vercel account token from vercel.com \u2192 Settings \u2192 Tokens |
-| \`VERCEL_ORG_ID\` | Found in vercel.com \u2192 Settings \u2192 General |
-| \`VERCEL_PROJECT_ID\` | Found in your Vercel project settings |
-{{/if}}
-
-{{#if (eq deployTarget "netlify")}}
-## Netlify Secrets
-
-| Secret Name | Value |
-|---|---|
-| \`NETLIFY_AUTH_TOKEN\` | Netlify personal access token from app.netlify.com \u2192 User settings \u2192 Applications |
-| \`NETLIFY_SITE_ID\` | Your Netlify site ID (found in Site settings \u2192 General \u2192 Site ID) |
-{{/if}}
-
-{{#if (eq deployTarget "firebase")}}
-## Firebase Secrets
-
-| Secret Name | Value |
-|---|---|
-| \`FIREBASE_SERVICE_ACCOUNT\` | Firebase service account JSON \u2014 Firebase Console \u2192 Project Settings \u2192 Service accounts \u2192 Generate new private key |
-
-**Project ID configured:** \`{{firebaseProjectId}}\`
-{{/if}}
-
-{{#if (eq deployTarget "github-pages")}}
-## GitHub Pages
-
-No additional secrets required. GitHub Pages uses \`GITHUB_TOKEN\` which is automatically provided by GitHub Actions.
-
-**Publish branch configured:** \`{{ghPagesBranch}}\`
-{{/if}}
-
-{{#if (eq deployTarget "cloudflare-pages")}}
-## Cloudflare Pages Secrets
-
-| Secret Name | Value |
-|---|---|
-| \`CLOUDFLARE_API_TOKEN\` | Cloudflare API token with Cloudflare Pages edit permissions |
-| \`CLOUDFLARE_ACCOUNT_ID\` | Your Cloudflare account ID (found in the Cloudflare dashboard sidebar) |
-
-**Pages project configured:** \`{{cloudflarePagesProject}}\`
-{{/if}}
-
----
-*Generated by PipeForge on {{generatedAt}}*
-`,
-  "github-actions/gha-vercel.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 Type check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 Lint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: \${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: \${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: \${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-`,
-  "github-actions/gha-netlify.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 Type check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 Lint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-          production-branch: {{branch}}
-          github-token: \${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
-          enable-pull-request-comment: true
-          enable-commit-comment: true
-        env:
-          NETLIFY_AUTH_TOKEN: \${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: \${{ secrets.NETLIFY_SITE_ID }}
-`,
-  "github-actions/gha-firebase.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 Type check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 Lint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: \${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: \${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: {{firebaseProjectId}}
-`,
-  "github-actions/gha-github-pages.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-permissions:
-  contents: write
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 Type check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 Lint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-          publish_branch: {{ghPagesBranch}}
-          force_orphan: true
-`,
-  "github-actions/gha-cloudflare-pages.yml.hbs": `name: {{pipelineName}}
-
-on:
-{{#if triggers.push}}
-  push:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.pr}}
-  pull_request:
-    branches: [ {{branch}} ]
-{{/if}}
-{{#if triggers.manual}}
-  workflow_dispatch:
-{{/if}}
-{{#if triggers.schedule}}
-  schedule:
-    - cron: '{{cronExpression}}'
-{{/if}}
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '{{nodeVersion}}'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-{{#if qualityGates.enabled}}
-{{#if qualityGates.typescript.enabled}}
-      - name: Quality Gate \u2014 Type check
-        run: {{qualityGates.typescript.command}}
-{{/if}}
-{{#if qualityGates.lint.enabled}}
-      - name: Quality Gate \u2014 Lint
-        run: {{qualityGates.lint.command}}
-{{/if}}
-{{#if qualityGates.tests.enabled}}
-      - name: Quality Gate \u2014 Unit tests
-        run: {{qualityGates.tests.command}}
-{{/if}}
-{{#if qualityGates.format.enabled}}
-      - name: Quality Gate \u2014 Format check
-        run: {{qualityGates.format.command}}
-{{/if}}
-{{/if}}
-
-      - name: Build
-        run: npm run {{buildScript}}
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: {{cloudflarePagesProject}}
-          directory: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
-          gitHubToken: \${{ secrets.GITHUB_TOKEN }}
-`
+            }`;
+  }, "0"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, alias4 = container.hooks.helperMissing, alias5 = "function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return '{\n  "id": -1,\n  "name": "RELEASE-' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n  "type": 1,\n  "quality": 1,\n  "path": "\\\\",\n  "createdOn": "' + alias2((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 7, "column": 16 }, "end": { "line": 7, "column": 31 } } }) : helper)) + '",\n  "project": {\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n  },\n  "variables": {\n    "storageAccountName": {\n      "value": "' + alias2((helper = (helper = lookupProperty(helpers, "storageAccountName") || (depth0 != null ? lookupProperty(depth0, "storageAccountName") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "storageAccountName", "hash": {}, "data": data, "loc": { "start": { "line": 13, "column": 16 }, "end": { "line": 13, "column": 38 } } }) : helper)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "deploymentPath": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "deploymentPath") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "projectName": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "serviceConnectionId": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }\n  },\n  "variableGroups": [],\n  "environments": [\n    {\n      "id": 1,\n      "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + '",\n      "rank": 1,\n      "owner": {\n        "displayName": "PipeForge"\n      },\n      "variables": {},\n      "variableGroups": [],\n      "preDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 1\n        }\n      },\n      "postDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 2\n        }\n      },\n      "deployPhases": [\n        {\n          "deploymentInput": {\n            "parallelExecution": {\n              "parallelExecutionType": 0\n            },\n            "agentSpecification": {\n              "identifier": "ubuntu-latest"\n            },\n            "skipArtifactsDownload": false,\n            "artifactsDownloadInput": {\n              "downloadInputs": [\n                {\n                  "artifactItems": [],\n                  "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                  "artifactType": "Build",\n                  "artifactDownloadMode": "All"\n                }\n              ]\n            },\n            "queueId": 0,\n            "demands": [],\n            "enableAccessToken": false,\n            "timeoutInMinutes": 0,\n            "jobCancelTimeoutInMinutes": 1,\n            "condition": "succeeded()",\n            "overrideInputs": {}\n          },\n          "rank": 1,\n          "phaseType": 1,\n          "name": "Agent job",\n          "refName": "Job_1",\n          "workflowTasks": [\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 delete blobs at primary path",\n              "refName": "AzureCLI_Delete_Primary",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern '$(deploymentPath)/*'",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            },\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 upload blobs to primary path",\n              "refName": "AzureCLI_Upload_Primary",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "az storage blob upload-batch --destination '$web/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            },\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 delete blobs at versioned path",\n              "refName": "AzureCLI_Delete_Versioned",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern 'v/$(deploymentPath)/*'",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            },\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 upload blobs to versioned path",\n              "refName": "AzureCLI_Upload_Versioned",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "az storage blob upload-batch --destination '$web/v/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, depth0 != null ? lookupProperty(depth0, "hasProtectedPaths") : depth0, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 218, "column": 13 }, "end": { "line": 245, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
+  }, "main"), "useData": true }),
+  "release-swa.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return ',\n\n            {\n              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",\n              "version": "0.*",\n              "name": "Trigger downstream pipeline",\n              "refName": "TriggerDownstreamPipeline",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "waitForCompletion": "false",\n                "buildDefinition": "' + container.escapeExpression(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineId") : stack1, depth0)) + '",\n                "queueBuildForUserThatTriggeredBuild": "true",\n                "ignoreSslCertificateErrors": "false",\n                "useSameSourceVersion": "false",\n                "useCustomSourceVersion": "false",\n                "buildParameters": "",\n                "storeInEnvironment": "false",\n                "authenticationMethod": "OAuth Token",\n                "password": "$(System.AccessToken)",\n                "enableSecureParameters": "false"\n              }\n            }';
+  }, "0"), "compiler": [8, ">= 4.3.0"], "main": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
+    var stack1, helper, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : container.nullContext || {}, alias4 = container.hooks.helperMissing, alias5 = "function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
+      if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+        return parent[propertyName];
+      }
+      return void 0;
+    };
+    return '{\n  "id": -1,\n  "name": "RELEASE-' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n  "type": 1,\n  "quality": 1,\n  "path": "\\\\",\n  "createdOn": "' + alias2((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 7, "column": 16 }, "end": { "line": 7, "column": 31 } } }) : helper)) + '",\n  "project": {\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n  },\n  "variables": {\n    "swaDeploymentToken": {\n      "value": "' + alias2((helper = (helper = lookupProperty(helpers, "swaDeploymentToken") || (depth0 != null ? lookupProperty(depth0, "swaDeploymentToken") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "swaDeploymentToken", "hash": {}, "data": data, "loc": { "start": { "line": 13, "column": 16 }, "end": { "line": 13, "column": 38 } } }) : helper)) + '",\n      "allowOverride": false,\n      "isSecret": true\n    },\n    "deploymentPath": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "deploymentPath") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "projectName": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "serviceConnectionId": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }\n  },\n  "variableGroups": [],\n  "environments": [\n    {\n      "id": 1,\n      "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + '",\n      "rank": 1,\n      "owner": {\n        "displayName": "PipeForge"\n      },\n      "variables": {},\n      "variableGroups": [],\n      "preDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 1\n        }\n      },\n      "postDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 2\n        }\n      },\n      "deployPhases": [\n        {\n          "deploymentInput": {\n            "parallelExecution": {\n              "parallelExecutionType": 0\n            },\n            "agentSpecification": {\n              "identifier": "ubuntu-latest"\n            },\n            "skipArtifactsDownload": false,\n            "artifactsDownloadInput": {\n              "downloadInputs": [\n                {\n                  "artifactItems": [],\n                  "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                  "artifactType": "Build",\n                  "artifactDownloadMode": "All"\n                }\n              ]\n            },\n            "queueId": 0,\n            "demands": [],\n            "enableAccessToken": false,\n            "timeoutInMinutes": 0,\n            "jobCancelTimeoutInMinutes": 1,\n            "condition": "succeeded()",\n            "overrideInputs": {}\n          },\n          "rank": 1,\n          "phaseType": 1,\n          "name": "Agent job",\n          "refName": "Job_1",\n          "workflowTasks": [\n\n            {\n              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "version": "2.*",\n              "name": "Install @azure/static-web-apps-cli",\n              "refName": "InstallSwaCli",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "script": "npm install -g @azure/static-web-apps-cli",\n                "workingDirectory": "",\n                "failOnStderr": "false"\n              }\n            },\n\n            {\n              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",\n              "version": "2.*",\n              "name": "SWA Deploy \u2014 ' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n              "refName": "SWA_Deploy",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "script": "swa deploy . --deployment-token $(swaDeploymentToken) --env ' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + ' --no-use-keychain",\n                "workingDirectory": "$(System.DefaultWorkingDirectory)/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStderr": "false"\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineAfterDeploy") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 152, "column": 13 }, "end": { "line": 181, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
+  }, "main"), "useData": true })
 };
 
 // src/features/pipelines/services/template.service.ts
-import_handlebars.default.registerHelper("eq", (a, b) => a === b);
-import_handlebars.default.registerHelper("json", (value) => JSON.stringify(value, null, 2));
-import_handlebars.default.registerHelper("addOne", (index) => (typeof index === "number" ? index : 0) + 1);
-import_handlebars.default.registerHelper("splitCsv", (csv) => {
+import_handlebars2.default.registerHelper("eq", (a, b) => a === b);
+import_handlebars2.default.registerHelper("json", (value) => JSON.stringify(value, null, 2));
+import_handlebars2.default.registerHelper("addOne", (index) => (typeof index === "number" ? index : 0) + 1);
+import_handlebars2.default.registerHelper("splitCsv", (csv) => {
   if (typeof csv !== "string" || csv.trim() === "") return [];
   return csv.split(",").map((s) => s.trim()).filter(Boolean);
 });
-var templateCache = /* @__PURE__ */ new Map();
-for (const [name, source] of Object.entries(TEMPLATE_SOURCES)) {
-  templateCache.set(name, import_handlebars.default.compile(source));
-}
 function renderTemplate(templateName, context2) {
-  const compiled = templateCache.get(templateName);
-  if (compiled === void 0) {
+  const delegate = PRECOMPILED_TEMPLATES[templateName];
+  if (delegate === void 0) {
     throw new AppError(
-      `Template "${templateName}" not found. Available: ${[...templateCache.keys()].join(", ")}`,
+      `Template "${templateName}" not found. Available: ${Object.keys(PRECOMPILED_TEMPLATES).join(", ")}`,
       500,
       false
     );
   }
-  return compiled(context2);
+  return delegate(context2);
 }
 __name(renderTemplate, "renderTemplate");
 
@@ -41607,9 +40674,8 @@ app.onError((err, c) => {
     );
   }
   const message = err instanceof Error ? err.message : String(err);
-  const stack = err instanceof Error ? err.stack : void 0;
-  console.error("Unhandled error:", message, stack);
-  return c.json({ status: "error", message: `Internal server error: ${message}` }, 500);
+  console.error("Unhandled error:", err);
+  return c.json({ status: "error", message }, 500);
 });
 var src_default = app;
 
