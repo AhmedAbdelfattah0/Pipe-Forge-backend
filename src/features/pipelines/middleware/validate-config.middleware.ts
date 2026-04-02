@@ -25,9 +25,10 @@ const LanguageSchema = z.object({
 
 const QualityGateScriptSchema = z.object({
   enabled: z.boolean(),
-  command: z.string().max(500).regex(
-    /^[a-zA-Z0-9 _\-:./@=]+$/,
-    'Command contains invalid characters',
+  // Empty string is valid (gate disabled). Only enforce character allowlist when non-empty.
+  command: z.string().max(500).refine(
+    (v) => v === '' || /^[a-zA-Z0-9 _\-:./@=]+$/.test(v),
+    { message: 'Command contains invalid characters' },
   ),
 });
 

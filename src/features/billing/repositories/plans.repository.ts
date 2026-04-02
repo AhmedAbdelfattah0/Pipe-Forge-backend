@@ -36,6 +36,9 @@ export interface Plan {
   price_annual: number;
   max_projects_per_month: number | null;
   max_team_members: number | null;
+  max_ai_diagnoses_per_day: number | null;
+  max_validator_files_per_month: number | null;
+  max_history_items: number | null;
   stripe_price_id_monthly: string | null;
   stripe_price_id_annual: string | null;
   created_at: string;
@@ -62,6 +65,9 @@ export interface CreatePlanInput {
   price_annual?: number;
   max_projects_per_month?: number | null;
   max_team_members?: number | null;
+  max_ai_diagnoses_per_day?: number | null;
+  max_validator_files_per_month?: number | null;
+  max_history_items?: number | null;
   stripe_price_id_monthly?: string;
   stripe_price_id_annual?: string;
 }

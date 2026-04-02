@@ -13,6 +13,8 @@
 import { Hono } from 'hono';
 import { AppError } from '../../../shared/utils/app-error.js';
 import { ValidatorService } from '../services/validator.service.js';
+import { checkFeatureLock } from '../../billing/middleware/feature-gate.middleware.js';
+import { createSupabaseAdmin } from '../../../config/supabase.js';
 import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
 const validatorService = new ValidatorService();
@@ -25,6 +27,11 @@ export function validatorRoutes() {
   // Returns: { platform, healthScore, issues }
 
   app.post('/', async (c) => {
+    // ── Feature gate: enforce plan limits for validator ────────────────────
+    const userId = c.get('userId');
+    const supabase = createSupabaseAdmin(c.env);
+    await checkFeatureLock(supabase, userId, 'validator');
+
     const body = await c.req.json<{
       filename?: string;
       content?: string;
@@ -49,6 +56,11 @@ export function validatorRoutes() {
   // Returns: ZIP binary with fixed file + changelog.txt
 
   app.post('/fix', async (c) => {
+    // ── Feature gate: enforce plan limits for validator ────────────────────
+    const userId = c.get('userId');
+    const supabase = createSupabaseAdmin(c.env);
+    await checkFeatureLock(supabase, userId, 'validator');
+
     const body = await c.req.json<{
       filename?: string;
       content?: string;

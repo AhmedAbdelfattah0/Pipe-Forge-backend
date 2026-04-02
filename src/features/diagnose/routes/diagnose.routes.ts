@@ -14,7 +14,6 @@ import { Hono } from 'hono';
 import { AppError } from '../../../shared/utils/app-error.js';
 import { createSupabaseAdmin } from '../../../config/supabase.js';
 import { HistoryRepository } from '../../history/repositories/history.repository.js';
-import { SubscriptionRepository } from '../../billing/repositories/subscription.repository.js';
 import { DiagnoseService } from '../services/diagnose.service.js';
 import { PipelineGeneratorService } from '../../pipelines/services/pipeline-generator.service.js';
 import { PipelineZipService } from '../../pipelines/services/pipeline-zip.service.js';
@@ -23,13 +22,11 @@ import {
   decryptConfigSnapshot,
   encryptConfigSnapshot,
 } from '../../../shared/utils/config-encryption.js';
+import { checkFeatureLock } from '../../billing/middleware/feature-gate.middleware.js';
 import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
 const generatorService = new PipelineGeneratorService();
 const zipService = new PipelineZipService();
-
-/** Daily diagnosis limits by plan. */
-const DAILY_LIMIT_FREE = 10;
 
 export function diagnoseRoutes() {
   const app = new Hono<HonoEnv>();
@@ -56,24 +53,9 @@ export function diagnoseRoutes() {
 
     const supabase = createSupabaseAdmin(c.env);
     const historyRepository = new HistoryRepository(supabase);
-    const subscriptionRepository = new SubscriptionRepository(supabase);
 
-    // ── Rate limiting: free plan users capped at DAILY_LIMIT_FREE per day ──
-    const subscription = await subscriptionRepository.findByUserId(userId);
-    if (subscription && subscription.plan === 'free') {
-      const { count } = await supabase
-        .from('diagnosis_logs')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('created_at', new Date(Date.now() - 86_400_000).toISOString());
-
-      if ((count ?? 0) >= DAILY_LIMIT_FREE) {
-        throw new AppError(
-          `Free plan is limited to ${DAILY_LIMIT_FREE} diagnoses per day. Upgrade to Pro for unlimited diagnoses.`,
-          403,
-        );
-      }
-    }
+    // ── Feature gate: enforce plan limits for AI diagnosis ─────────────────
+    await checkFeatureLock(supabase, userId, 'ai_diagnosis');
 
     // ── Load generation config ─────────────────────────────────────────────
     const project = await historyRepository.findById(body.generationId);

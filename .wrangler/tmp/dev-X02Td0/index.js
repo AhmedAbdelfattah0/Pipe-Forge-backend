@@ -9638,13 +9638,13 @@ var init_pipeline_zip_service = __esm({
   }
 });
 
-// .wrangler/tmp/bundle-OnHveh/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-oRd0YF/middleware-loader.entry.ts
 init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
 
-// .wrangler/tmp/bundle-OnHveh/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-oRd0YF/middleware-insertion-facade.js
 init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
@@ -36650,9 +36650,10 @@ var LanguageSchema = external_exports.object({
 });
 var QualityGateScriptSchema = external_exports.object({
   enabled: external_exports.boolean(),
-  command: external_exports.string().max(500).regex(
-    /^[a-zA-Z0-9 _\-:./@=]+$/,
-    "Command contains invalid characters"
+  // Empty string is valid (gate disabled). Only enforce character allowlist when non-empty.
+  command: external_exports.string().max(500).refine(
+    (v) => v === "" || /^[a-zA-Z0-9 _\-:./@=]+$/.test(v),
+    { message: "Command contains invalid characters" }
   )
 });
 var QualityGatesSchema = external_exports.object({
@@ -41193,11 +41194,78 @@ ${applied.map((a, i) => `${i + 1}. ${a}`).join("\n")}` : "No auto-fixable issues
   }
 };
 
+// src/features/billing/middleware/feature-gate.middleware.ts
+init_modules_watch_stub();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
+init_performance2();
+var REQUIRED_PLAN = {
+  ai_diagnosis: "pro",
+  validator: "pro",
+  generate: "pro"
+};
+function throwFeatureLocked(feature) {
+  throw new HTTPException(403, {
+    message: JSON.stringify({
+      error: "FEATURE_LOCKED",
+      feature,
+      requiredPlan: REQUIRED_PLAN[feature],
+      upgradeUrl: "/pricing"
+    })
+  });
+}
+__name(throwFeatureLocked, "throwFeatureLocked");
+async function checkFeatureLock(supabase, userId, feature) {
+  const subscriptionRepo = new SubscriptionRepository(supabase);
+  const plansRepo = new PlansRepository(supabase);
+  const subscription = await subscriptionRepo.findByUserId(userId);
+  if (!subscription) {
+    throw new HTTPException(404, {
+      message: "No active subscription found. Please contact support."
+    });
+  }
+  const plan = await plansRepo.findBySlug(subscription.plan).catch(() => null);
+  if (!plan) {
+    return;
+  }
+  if (feature === "ai_diagnosis") {
+    const limit = plan.max_ai_diagnoses_per_day;
+    if (limit !== null && limit <= 0) {
+      throwFeatureLocked(feature);
+    }
+    if (limit !== null && limit > 0) {
+      const { count: count3 } = await supabase.from("diagnosis_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
+      if ((count3 ?? 0) >= limit) {
+        throwFeatureLocked(feature);
+      }
+    }
+    return;
+  }
+  if (feature === "validator") {
+    const limit = plan.max_validator_files_per_month;
+    if (limit !== null && limit <= 0) {
+      throwFeatureLocked(feature);
+    }
+    return;
+  }
+  if (feature === "generate") {
+    const limit = plan.max_projects_per_month;
+    if (limit !== null && subscription.mfe_used_this_month >= limit) {
+      throwFeatureLocked(feature);
+    }
+    return;
+  }
+}
+__name(checkFeatureLock, "checkFeatureLock");
+
 // src/features/validator/routes/validator.routes.ts
 var validatorService = new ValidatorService();
 function validatorRoutes() {
   const app2 = new Hono2();
   app2.post("/", async (c) => {
+    const userId = c.get("userId");
+    const supabase = createSupabaseAdmin(c.env);
+    await checkFeatureLock(supabase, userId, "validator");
     const body = await c.req.json();
     if (!body.content || typeof body.content !== "string") {
       throw new AppError("content is required and must be a string", 400);
@@ -41209,6 +41277,9 @@ function validatorRoutes() {
     return c.json(result);
   });
   app2.post("/fix", async (c) => {
+    const userId = c.get("userId");
+    const supabase = createSupabaseAdmin(c.env);
+    await checkFeatureLock(supabase, userId, "validator");
     const body = await c.req.json();
     if (!body.content || typeof body.content !== "string") {
       throw new AppError("content is required", 400);
@@ -41362,7 +41433,6 @@ Respond ONLY with a JSON object in this exact shape \u2014 no prose, no markdown
 init_pipeline_zip_service();
 var generatorService3 = new PipelineGeneratorService();
 var zipService3 = new PipelineZipService();
-var DAILY_LIMIT_FREE = 10;
 function diagnoseRoutes() {
   const app2 = new Hono2();
   app2.post("/", async (c) => {
@@ -41379,17 +41449,7 @@ function diagnoseRoutes() {
     }
     const supabase = createSupabaseAdmin(c.env);
     const historyRepository = new HistoryRepository(supabase);
-    const subscriptionRepository = new SubscriptionRepository(supabase);
-    const subscription = await subscriptionRepository.findByUserId(userId);
-    if (subscription && subscription.plan === "free") {
-      const { count: count3 } = await supabase.from("diagnosis_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
-      if ((count3 ?? 0) >= DAILY_LIMIT_FREE) {
-        throw new AppError(
-          `Free plan is limited to ${DAILY_LIMIT_FREE} diagnoses per day. Upgrade to Pro for unlimited diagnoses.`,
-          403
-        );
-      }
-    }
+    await checkFeatureLock(supabase, userId, "ai_diagnosis");
     const project = await historyRepository.findById(body.generationId);
     if (!project) {
       throw new AppError("Generation not found", 404);
@@ -41586,7 +41646,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env2, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-OnHveh/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-oRd0YF/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -41622,7 +41682,7 @@ function __facade_invoke__(request, env2, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-OnHveh/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-oRd0YF/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
