@@ -39775,6 +39775,13 @@ var IV_LENGTH = 12;
 var AUTH_TAG_LENGTH = 16;
 function encrypt(plainText, keyHex) {
   const key = Buffer.from(keyHex, "hex");
+  if (key.length !== 32) {
+    throw new AppError(
+      `ENCRYPTION_KEY must be a 64-character hex string (32 bytes). Got ${key.length} bytes from a ${keyHex.length}-character input.`,
+      500,
+      false
+    );
+  }
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   const encrypted = Buffer.concat([cipher.update(plainText, "utf8"), cipher.final()]);
