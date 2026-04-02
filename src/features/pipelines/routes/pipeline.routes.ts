@@ -19,6 +19,7 @@ import { createSupabaseAdmin } from '../../../config/supabase.js';
 import { GeneratorConfigSchema } from '../middleware/validate-config.middleware.js';
 import type { ValidatedGeneratorConfig } from '../middleware/validate-config.middleware.js';
 import { checkPlanLimits } from '../../billing/middleware/plan-limiter.middleware.js';
+import { checkFeatureLock } from '../../billing/middleware/feature-gate.middleware.js';
 import { PipelineGeneratorService } from '../services/pipeline-generator.service.js';
 import { GitHubActionsGeneratorService } from '../services/github-actions-generator.service.js';
 import { PipelineZipService } from '../services/pipeline-zip.service.js';
@@ -66,8 +67,9 @@ export function pipelineRoutes() {
     const userId = c.get('userId');
     const supabase = createSupabaseAdmin(c.env);
 
-    // Check plan limits.
+    // Check plan limits and feature gate.
     await checkPlanLimits(supabase, userId, config);
+    await checkFeatureLock(supabase, userId, 'generate');
 
     const projectName = config.projectName || 'my-app';
     const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -187,6 +189,7 @@ export function pipelineRoutes() {
     const supabase = createSupabaseAdmin(c.env);
 
     await checkPlanLimits(supabase, userId, config);
+    await checkFeatureLock(supabase, userId, 'generate');
 
     const projectName = config.projectName || 'my-app';
     const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');

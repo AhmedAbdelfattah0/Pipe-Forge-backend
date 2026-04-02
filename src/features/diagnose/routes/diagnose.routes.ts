@@ -70,8 +70,8 @@ export function diagnoseRoutes() {
 
     const config = decryptConfigSnapshot(project.config_snapshot, c.env.ENCRYPTION_KEY);
 
-    // ── Call Claude ────────────────────────────────────────────────────────
-    const diagnoseService = new DiagnoseService(c.env.ANTHROPIC_API_KEY);
+    // ── Call Gemini ───────────────────────────────────────────────────────
+    const diagnoseService = new DiagnoseService(c.env.GEMINI_API_KEY);
     const result = await diagnoseService.diagnose(config, body.errorLog);
 
     // ── Log the attempt ────────────────────────────────────────────────────

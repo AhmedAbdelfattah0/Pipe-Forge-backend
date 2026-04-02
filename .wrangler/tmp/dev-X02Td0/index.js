@@ -36983,6 +36983,79 @@ async function checkPlanLimits(supabase, userId, config2) {
 }
 __name(checkPlanLimits, "checkPlanLimits");
 
+// src/features/billing/middleware/feature-gate.middleware.ts
+init_modules_watch_stub();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
+init_performance2();
+var REQUIRED_PLAN = {
+  ai_diagnosis: "pro",
+  validator: "pro",
+  generate: "pro"
+};
+function throwFeatureLocked(feature) {
+  throw new HTTPException(403, {
+    message: JSON.stringify({
+      error: "FEATURE_LOCKED",
+      feature,
+      requiredPlan: REQUIRED_PLAN[feature],
+      upgradeUrl: "/pricing"
+    })
+  });
+}
+__name(throwFeatureLocked, "throwFeatureLocked");
+async function checkFeatureLock(supabase, userId, feature) {
+  const subscriptionRepo = new SubscriptionRepository(supabase);
+  const plansRepo = new PlansRepository(supabase);
+  const subscription = await subscriptionRepo.findByUserId(userId);
+  if (!subscription) {
+    throw new HTTPException(404, {
+      message: "No active subscription found. Please contact support."
+    });
+  }
+  const plan = await plansRepo.findBySlug(subscription.plan).catch(() => null);
+  if (!plan) {
+    return;
+  }
+  if (feature === "ai_diagnosis") {
+    const limit = plan.max_ai_diagnoses_per_day;
+    if (limit !== null && limit <= 0) {
+      throwFeatureLocked(feature);
+    }
+    if (limit !== null && limit > 0) {
+      const { count: count3 } = await supabase.from("diagnosis_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
+      if ((count3 ?? 0) >= limit) {
+        throwFeatureLocked(feature);
+      }
+    }
+    return;
+  }
+  if (feature === "validator") {
+    const limit = plan.max_validator_files_per_month;
+    if (limit !== null && limit <= 0) {
+      throwFeatureLocked(feature);
+    }
+    if (limit !== null && limit > 0) {
+      const startOfMonth = /* @__PURE__ */ new Date();
+      startOfMonth.setUTCDate(1);
+      startOfMonth.setUTCHours(0, 0, 0, 0);
+      const { count: count3 } = await supabase.from("validator_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", startOfMonth.toISOString());
+      if ((count3 ?? 0) >= limit) {
+        throwFeatureLocked(feature);
+      }
+    }
+    return;
+  }
+  if (feature === "generate") {
+    const limit = plan.max_projects_per_month;
+    if (limit !== null && subscription.mfe_used_this_month >= limit) {
+      throwFeatureLocked(feature);
+    }
+    return;
+  }
+}
+__name(checkFeatureLock, "checkFeatureLock");
+
 // src/features/pipelines/services/pipeline-generator.service.ts
 init_modules_watch_stub();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
@@ -39004,6 +39077,7 @@ function pipelineRoutes() {
     const userId = c.get("userId");
     const supabase = createSupabaseAdmin(c.env);
     await checkPlanLimits(supabase, userId, config2);
+    await checkFeatureLock(supabase, userId, "generate");
     const projectName = config2.projectName || "my-app";
     const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, "_");
     const enabledMarkets = config2.markets.filter((m) => m.enabled).map((m) => m.code);
@@ -39097,6 +39171,7 @@ function pipelineRoutes() {
     const userId = c.get("userId");
     const supabase = createSupabaseAdmin(c.env);
     await checkPlanLimits(supabase, userId, config2);
+    await checkFeatureLock(supabase, userId, "generate");
     const projectName = config2.projectName || "my-app";
     const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, "_");
     const enabledMarkets = config2.markets.filter((m) => m.enabled).map((m) => m.code);
@@ -40470,79 +40545,6 @@ ${applied.map((a, i) => `${i + 1}. ${a}`).join("\n")}` : "No auto-fixable issues
   }
 };
 
-// src/features/billing/middleware/feature-gate.middleware.ts
-init_modules_watch_stub();
-init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
-init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
-init_performance2();
-var REQUIRED_PLAN = {
-  ai_diagnosis: "pro",
-  validator: "pro",
-  generate: "pro"
-};
-function throwFeatureLocked(feature) {
-  throw new HTTPException(403, {
-    message: JSON.stringify({
-      error: "FEATURE_LOCKED",
-      feature,
-      requiredPlan: REQUIRED_PLAN[feature],
-      upgradeUrl: "/pricing"
-    })
-  });
-}
-__name(throwFeatureLocked, "throwFeatureLocked");
-async function checkFeatureLock(supabase, userId, feature) {
-  const subscriptionRepo = new SubscriptionRepository(supabase);
-  const plansRepo = new PlansRepository(supabase);
-  const subscription = await subscriptionRepo.findByUserId(userId);
-  if (!subscription) {
-    throw new HTTPException(404, {
-      message: "No active subscription found. Please contact support."
-    });
-  }
-  const plan = await plansRepo.findBySlug(subscription.plan).catch(() => null);
-  if (!plan) {
-    return;
-  }
-  if (feature === "ai_diagnosis") {
-    const limit = plan.max_ai_diagnoses_per_day;
-    if (limit !== null && limit <= 0) {
-      throwFeatureLocked(feature);
-    }
-    if (limit !== null && limit > 0) {
-      const { count: count3 } = await supabase.from("diagnosis_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
-      if ((count3 ?? 0) >= limit) {
-        throwFeatureLocked(feature);
-      }
-    }
-    return;
-  }
-  if (feature === "validator") {
-    const limit = plan.max_validator_files_per_month;
-    if (limit !== null && limit <= 0) {
-      throwFeatureLocked(feature);
-    }
-    if (limit !== null && limit > 0) {
-      const startOfMonth = /* @__PURE__ */ new Date();
-      startOfMonth.setUTCDate(1);
-      startOfMonth.setUTCHours(0, 0, 0, 0);
-      const { count: count3 } = await supabase.from("validator_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", startOfMonth.toISOString());
-      if ((count3 ?? 0) >= limit) {
-        throwFeatureLocked(feature);
-      }
-    }
-    return;
-  }
-  if (feature === "generate") {
-    const limit = plan.max_projects_per_month;
-    if (limit !== null && subscription.mfe_used_this_month >= limit) {
-      throwFeatureLocked(feature);
-    }
-    return;
-  }
-}
-__name(checkFeatureLock, "checkFeatureLock");
-
 // src/features/validator/routes/validator.routes.ts
 var validatorService = new ValidatorService();
 function validatorRoutes() {
@@ -40618,42 +40620,32 @@ init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
 init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
 var DiagnoseService = class {
-  constructor(anthropicApiKey) {
-    this.anthropicApiKey = anthropicApiKey;
+  constructor(geminiApiKey) {
+    this.geminiApiKey = geminiApiKey;
   }
   static {
     __name(this, "DiagnoseService");
   }
   async diagnose(config2, errorLog) {
-    if (!this.anthropicApiKey) {
-      throw new Error("ANTHROPIC_API_KEY is not configured");
+    if (!this.geminiApiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
     const prompt = this.buildPrompt(config2, errorLog);
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiApiKey}`;
+    const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "x-api-key": this.anthropicApiKey,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1e3,
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
+        contents: [{ parts: [{ text: prompt }] }]
       })
     });
     if (!response.ok) {
       const err = await response.text();
-      console.error(`Claude API error ${response.status}:`, err);
+      console.error(`Gemini API error ${response.status}:`, err);
       throw new Error("AI diagnosis service is temporarily unavailable. Please try again later.");
     }
     const data = await response.json();
-    const text = data.content.find((b) => b.type === "text")?.text ?? "{}";
+    const text = data.candidates[0].content.parts[0].text;
     const jsonMatch = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
     const jsonText = jsonMatch ? jsonMatch[1].trim() : text.trim();
     let parsed;
@@ -40753,7 +40745,7 @@ function diagnoseRoutes() {
       throw new AppError("Generation not found", 404);
     }
     const config2 = decryptConfigSnapshot(project.config_snapshot, c.env.ENCRYPTION_KEY);
-    const diagnoseService = new DiagnoseService(c.env.ANTHROPIC_API_KEY);
+    const diagnoseService = new DiagnoseService(c.env.GEMINI_API_KEY);
     const result = await diagnoseService.diagnose(config2, body.errorLog);
     await supabase.from("diagnosis_logs").insert({
       user_id: userId,

@@ -1,9 +1,9 @@
 /**
  * diagnose.service.ts
  *
- * Calls the Claude API (claude-sonnet-4-20250514) to diagnose a pipeline failure.
+ * Calls the Gemini API (gemini-2.0-flash) to diagnose a pipeline failure.
  * PipeForge's advantage: the full generator config is included in every prompt,
- * so Claude produces targeted answers rather than generic guesses.
+ * so Gemini produces targeted answers rather than generic guesses.
  */
 
 export interface DiagnoseResult {
@@ -16,51 +16,38 @@ export interface DiagnoseResult {
 }
 
 export class DiagnoseService {
-  constructor(private readonly anthropicApiKey: string) {}
+  constructor(private readonly geminiApiKey: string) {}
 
   async diagnose(
     config: Record<string, unknown>,
     errorLog: string,
   ): Promise<DiagnoseResult> {
-    if (!this.anthropicApiKey) {
-      throw new Error('ANTHROPIC_API_KEY is not configured');
+    if (!this.geminiApiKey) {
+      throw new Error('GEMINI_API_KEY is not configured');
     }
 
     const prompt = this.buildPrompt(config, errorLog);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiApiKey}`;
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'x-api-key': this.anthropicApiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        contents: [{ parts: [{ text: prompt }] }],
       }),
     });
 
     if (!response.ok) {
-      // Log the full error server-side but do not expose Claude API details to the client.
+      // Log the full error server-side but do not expose Gemini API details to the client.
       const err = await response.text();
-      console.error(`Claude API error ${response.status}:`, err);
+      console.error(`Gemini API error ${response.status}:`, err);
       throw new Error('AI diagnosis service is temporarily unavailable. Please try again later.');
     }
 
-    const data = await response.json<{
-      content: Array<{ type: string; text: string }>;
-    }>();
+    const data = await response.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+    const text = data.candidates[0].content.parts[0].text;
 
-    const text = data.content.find((b) => b.type === 'text')?.text ?? '{}';
-
-    // Extract JSON from the response (Claude may wrap it in markdown code fences).
+    // Extract JSON from the response (Gemini may wrap it in markdown code fences).
     const jsonMatch = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
     const jsonText = jsonMatch ? jsonMatch[1].trim() : text.trim();
 
@@ -68,7 +55,7 @@ export class DiagnoseService {
     try {
       parsed = JSON.parse(jsonText) as Partial<DiagnoseResult>;
     } catch {
-      // If Claude returned prose instead of JSON, wrap it gracefully.
+      // If Gemini returned prose instead of JSON, wrap it gracefully.
       parsed = {
         errorType: 'UnknownError',
         rootCause: text,
