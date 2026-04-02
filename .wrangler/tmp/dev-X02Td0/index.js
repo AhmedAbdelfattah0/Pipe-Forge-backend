@@ -36664,20 +36664,22 @@ var QualityGatesSchema = external_exports.object({
   format: QualityGateScriptSchema
 });
 var TokenMappingSchema = external_exports.object({
-  tokenName: external_exports.string().max(200).regex(
-    /^[a-zA-Z0-9_.-]+$/,
-    "Token name may only contain letters, numbers, underscores, dots, and hyphens"
+  // Empty string is valid (placeholder row). Only enforce character allowlist when non-empty.
+  tokenName: external_exports.string().max(200).refine(
+    (v) => v === "" || /^[a-zA-Z0-9_.-]+$/.test(v),
+    { message: "Token name may only contain letters, numbers, underscores, dots, and hyphens" }
   ),
-  variableName: external_exports.string().max(200).regex(
-    /^[a-zA-Z0-9_.-]+$/,
-    "Variable name may only contain letters, numbers, underscores, dots, and hyphens"
+  variableName: external_exports.string().max(200).refine(
+    (v) => v === "" || /^[a-zA-Z0-9_.-]+$/.test(v),
+    { message: "Variable name may only contain letters, numbers, underscores, dots, and hyphens" }
   )
 });
 var TokenReplacementSchema = external_exports.object({
   enabled: external_exports.boolean(),
   filePattern: external_exports.string().max(300).optional().default("src/environments/environment.*.ts"),
   tokenFormat: external_exports.enum(["#{TOKEN}#", "__TOKEN__", "${TOKEN}"]).optional().default("#{TOKEN}#"),
-  tokenMappings: external_exports.array(TokenMappingSchema).max(50).optional().default([]),
+  // Filter out placeholder rows (both fields empty) before they reach the template.
+  tokenMappings: external_exports.array(TokenMappingSchema).max(50).optional().default([]).transform((mappings) => mappings.filter((m) => m.tokenName !== "" || m.variableName !== "")),
   // Backward-compatible deprecated fields
   environmentFilePath: external_exports.string().max(300).optional().default(""),
   secretVariableNames: external_exports.string().max(500).optional().default("")

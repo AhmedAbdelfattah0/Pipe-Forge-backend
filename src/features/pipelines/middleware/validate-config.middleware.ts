@@ -41,13 +41,14 @@ const QualityGatesSchema = z.object({
 });
 
 const TokenMappingSchema = z.object({
-  tokenName: z.string().max(200).regex(
-    /^[a-zA-Z0-9_.-]+$/,
-    'Token name may only contain letters, numbers, underscores, dots, and hyphens',
+  // Empty string is valid (placeholder row). Only enforce character allowlist when non-empty.
+  tokenName: z.string().max(200).refine(
+    (v) => v === '' || /^[a-zA-Z0-9_.-]+$/.test(v),
+    { message: 'Token name may only contain letters, numbers, underscores, dots, and hyphens' },
   ),
-  variableName: z.string().max(200).regex(
-    /^[a-zA-Z0-9_.-]+$/,
-    'Variable name may only contain letters, numbers, underscores, dots, and hyphens',
+  variableName: z.string().max(200).refine(
+    (v) => v === '' || /^[a-zA-Z0-9_.-]+$/.test(v),
+    { message: 'Variable name may only contain letters, numbers, underscores, dots, and hyphens' },
   ),
 });
 
@@ -55,7 +56,9 @@ const TokenReplacementSchema = z.object({
   enabled: z.boolean(),
   filePattern: z.string().max(300).optional().default('src/environments/environment.*.ts'),
   tokenFormat: z.enum(['#{TOKEN}#', '__TOKEN__', '${TOKEN}']).optional().default('#{TOKEN}#'),
-  tokenMappings: z.array(TokenMappingSchema).max(50).optional().default([]),
+  // Filter out placeholder rows (both fields empty) before they reach the template.
+  tokenMappings: z.array(TokenMappingSchema).max(50).optional().default([])
+    .transform(mappings => mappings.filter(m => m.tokenName !== '' || m.variableName !== '')),
   // Backward-compatible deprecated fields
   environmentFilePath: z.string().max(300).optional().default(''),
   secretVariableNames: z.string().max(500).optional().default(''),
