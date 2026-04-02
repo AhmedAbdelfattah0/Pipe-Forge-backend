@@ -162,10 +162,16 @@ export class PipelineGeneratorService {
     const swaToken = config.swaTokens[resourceKey] ?? '';
     const appServiceName = config.appServiceNames[resourceKey] ?? '';
 
-    // Protected paths (storage account file preservation)
+    // Protected paths (storage account file preservation — legacy)
     const protectedPaths = config.protectedPaths ?? [];
     const protectedPathsContainer = config.protectedPathsContainer || `${mfe}-protected`;
     const hasProtectedPaths = protectedPaths.length > 0;
+
+    // Preserve files via az storage blob copy (new 3-field config)
+    const preserveFiles = config.preserveFiles ?? false;
+    const preserveSourceContainer = config.preserveSourceContainer ?? '';
+    const preserveDestinationFolder = config.preserveDestinationFolder ?? '';
+    const preserveDestinationContainer = config.preserveDestinationContainer ?? '$web';
 
     const context: ReleaseTemplateContext & {
       generatedAt: string;
@@ -174,6 +180,10 @@ export class PipelineGeneratorService {
       appServiceName: string;
       hasProtectedPaths: boolean;
       protectedPathsContainer: string;
+      preserveFiles: boolean;
+      preserveSourceContainer: string;
+      preserveDestinationFolder: string;
+      preserveDestinationContainer: string;
     } = {
       combination,
       config,
@@ -183,6 +193,10 @@ export class PipelineGeneratorService {
       appServiceName,
       hasProtectedPaths,
       protectedPathsContainer,
+      preserveFiles,
+      preserveSourceContainer,
+      preserveDestinationFolder,
+      preserveDestinationContainer,
     };
 
     const content = renderTemplate(templateName, context);

@@ -188,6 +188,14 @@ export interface GeneratorConfig {
   protectedPaths?: string[];
   /** Container name for storing protected path backups. */
   protectedPathsContainer?: string;
+  /** Whether to copy files from a source container into the destination container before deploying. */
+  preserveFiles?: boolean;
+  /** Azure container holding the files to be preserved (e.g. "certificates"). */
+  preserveSourceContainer?: string;
+  /** Folder to create inside the destination container (e.g. ".well-known"). */
+  preserveDestinationFolder?: string;
+  /** Destination container for the static site deployment (default: "$web"). */
+  preserveDestinationContainer?: string;
   /** Modern hosting platform config (Vercel, Netlify, Firebase, GitHub Pages, Cloudflare Pages). */
   modernHosting?: ModernHostingConfig;
 

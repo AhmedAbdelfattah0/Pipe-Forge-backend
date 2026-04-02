@@ -38369,16 +38369,13 @@ var PRECOMPILED_TEMPLATES = {
     return '{\n  "id": -1,\n  "name": "RELEASE-' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n  "type": 1,\n  "quality": 1,\n  "path": "\\\\",\n  "createdOn": "' + alias2((helper = (helper = lookupProperty(helpers, "generatedAt") || (depth0 != null ? lookupProperty(depth0, "generatedAt") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "generatedAt", "hash": {}, "data": data, "loc": { "start": { "line": 7, "column": 16 }, "end": { "line": 7, "column": 31 } } }) : helper)) + '",\n  "project": {\n    "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n  },\n  "variables": {\n    "appServiceName": {\n      "value": "' + alias2((helper = (helper = lookupProperty(helpers, "appServiceName") || (depth0 != null ? lookupProperty(depth0, "appServiceName") : depth0)) != null ? helper : alias4, typeof helper === alias5 ? helper.call(alias3, { "name": "appServiceName", "hash": {}, "data": data, "loc": { "start": { "line": 13, "column": 16 }, "end": { "line": 13, "column": 34 } } }) : helper)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "deploymentPath": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "deploymentPath") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "projectName": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "projectName") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    },\n    "serviceConnectionId": {\n      "value": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n      "allowOverride": false,\n      "isSecret": false\n    }\n  },\n  "variableGroups": [],\n  "environments": [\n    {\n      "id": 1,\n      "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "environment") : stack1, depth0)) + '",\n      "rank": 1,\n      "owner": {\n        "displayName": "PipeForge"\n      },\n      "variables": {},\n      "variableGroups": [],\n      "preDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 1\n        }\n      },\n      "postDeployApprovals": {\n        "approvals": [\n          {\n            "rank": 1,\n            "isAutomated": true,\n            "isNotificationOn": false\n          }\n        ],\n        "approvalOptions": {\n          "requiredApproverCount": null,\n          "releaseCreatorCanBeApprover": false,\n          "autoTriggeredAndPreviousEnvironmentApprovedCanBeSkipped": false,\n          "enforceIdentityRevalidation": false,\n          "timeoutInMinutes": 0,\n          "executionOrder": 2\n        }\n      },\n      "deployPhases": [\n        {\n          "deploymentInput": {\n            "parallelExecution": {\n              "parallelExecutionType": 0\n            },\n            "agentSpecification": {\n              "identifier": "ubuntu-latest"\n            },\n            "skipArtifactsDownload": false,\n            "artifactsDownloadInput": {\n              "downloadInputs": [\n                {\n                  "artifactItems": [],\n                  "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                  "artifactType": "Build",\n                  "artifactDownloadMode": "All"\n                }\n              ]\n            },\n            "queueId": 0,\n            "demands": [],\n            "enableAccessToken": false,\n            "timeoutInMinutes": 0,\n            "jobCancelTimeoutInMinutes": 1,\n            "condition": "succeeded()",\n            "overrideInputs": {}\n          },\n          "rank": 1,\n          "phaseType": 1,\n          "name": "Agent job",\n          "refName": "Job_1",\n          "workflowTasks": [\n\n            {\n              "taskId": "497d490f-eea7-4f2b-ab94-48d9c1acdcb1",\n              "version": "4.*",\n              "name": "Azure App Service Deploy \u2014 ' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n              "refName": "AzureRmWebAppDeployment",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "ConnectionType": "AzureRM",\n                "ConnectedServiceName": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n                "PublishProfilePath": "$(System.DefaultWorkingDirectory)/**/*.pubxml",\n                "PublishProfilePassword": "",\n                "WebAppKind": "webApp",\n                "WebAppName": "$(appServiceName)",\n                "DeployToSlotOrASEFlag": "false",\n                "ResourceGroupName": "",\n                "SlotName": "production",\n                "VirtualApplication": "",\n                "Package": "$(System.DefaultWorkingDirectory)/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '/**/*.zip",\n                "packageForLinux": "$(System.DefaultWorkingDirectory)/' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '/**/*.zip",\n                "RuntimeStack": "",\n                "StartupCommand": "",\n                "ScriptType": "",\n                "InlineScript": ":: You can provide your deployment commands here. One command per line.",\n                "WebConfigParameters": "",\n                "AppSettings": "",\n                "ConfigurationSettings": "",\n                "enableCustomDeployment": "false",\n                "DeploymentType": "webDeploy",\n                "TakeAppOfflineFlag": "true",\n                "UseWebDeploy": "false",\n                "ExcludeFilesFromAppDataFlag": "true",\n                "AdditionalArguments": "-retryAttempts:6 -retryInterval:10000",\n                "RenameFilesFlag": "true",\n                "RemoveAdditionalFilesFlag": "false",\n                "enableXmlTransform": "false",\n                "enableXmlVariableSubstitution": "false",\n                "JSONFiles": ""\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, (stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "triggerPipelineAfterDeploy") : stack1, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 158, "column": 13 }, "end": { "line": 187, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
   }, "main"), "useData": true }),
   "release-storage.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
-    var stack1, helper, alias1 = container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+    var stack1, helper, alias1 = container.escapeExpression, alias2 = depth0 != null ? depth0 : container.nullContext || {}, alias3 = container.hooks.helperMissing, alias4 = "function", lookupProperty = container.lookupProperty || function(parent, propertyName) {
       if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
         return parent[propertyName];
       }
       return void 0;
     };
-    return ',\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 restore protected files",\n              "refName": "AzureCLI_Restore_Protected",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias1(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + `",
-                "scriptType": "bash",
-                "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob copy start-batch --source-container '` + alias1((helper = (helper = lookupProperty(helpers, "protectedPathsContainer") || (depth0 != null ? lookupProperty(depth0, "protectedPathsContainer") : depth0)) != null ? helper : container.hooks.helperMissing, typeof helper === "function" ? helper.call(depth0 != null ? depth0 : container.nullContext || {}, { "name": "protectedPathsContainer", "hash": {}, "data": data, "loc": { "start": { "line": 238, "column": 86 }, "end": { "line": 238, "column": 113 } } }) : helper)) + `' --destination-container '$web' --account-name $(storageAccountName)",
+    return ',\n\n            {\n              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",\n              "version": "0.*",\n              "name": "Azure CLI \u2014 preserve files",\n              "refName": "AzureCLI_Preserve_Files",\n              "enabled": true,\n              "alwaysRun": false,\n              "continueOnError": false,\n              "timeoutInMinutes": 0,\n              "retryCountOnTaskFailure": 0,\n              "definitionType": "task",\n              "overrideInputs": {},\n              "condition": "succeeded()",\n              "inputs": {\n                "connectedServiceNameARM": "' + alias1(container.lambda((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "serviceConnectionId") : stack1, depth0)) + '",\n                "scriptType": "bash",\n                "scriptLocation": "inlineScript",\n                "inlineScript": "storageAccount=\\"$(storageAccountName)\\"\\nsourceContainer=\\"' + alias1((helper = (helper = lookupProperty(helpers, "preserveSourceContainer") || (depth0 != null ? lookupProperty(depth0, "preserveSourceContainer") : depth0)) != null ? helper : alias3, typeof helper === alias4 ? helper.call(alias2, { "name": "preserveSourceContainer", "hash": {}, "data": data, "loc": { "start": { "line": 238, "column": 93 }, "end": { "line": 238, "column": 120 } } }) : helper)) + '\\"\\ndestinationContainer=\\"' + alias1((helper = (helper = lookupProperty(helpers, "preserveDestinationContainer") || (depth0 != null ? lookupProperty(depth0, "preserveDestinationContainer") : depth0)) != null ? helper : alias3, typeof helper === alias4 ? helper.call(alias2, { "name": "preserveDestinationContainer", "hash": {}, "data": data, "loc": { "start": { "line": 238, "column": 147 }, "end": { "line": 238, "column": 179 } } }) : helper)) + '\\"\\ndestinationFolder=\\"' + alias1((helper = (helper = lookupProperty(helpers, "preserveDestinationFolder") || (depth0 != null ? lookupProperty(depth0, "preserveDestinationFolder") : depth0)) != null ? helper : alias3, typeof helper === alias4 ? helper.call(alias2, { "name": "preserveDestinationFolder", "hash": {}, "data": data, "loc": { "start": { "line": 238, "column": 203 }, "end": { "line": 238, "column": 232 } } }) : helper)) + `\\"\\n\\nblob_list=$(az storage blob list --account-name $storageAccount --container-name $sourceContainer --query \\"[].name\\" --auth-mode login -o tsv | tr -d '\\\\r')\\n\\nif [ -z \\"$blob_list\\" ]; then\\n  echo \\"No blobs found in '$sourceContainer'.\\"\\nelse\\n  for blob in $blob_list; do\\n    az storage blob copy start --account-name $storageAccount --source-container $sourceContainer --source-blob \\"$blob\\" --destination-container $destinationContainer --destination-blob \\"$destinationFolder/$blob\\" --auth-mode login\\n  done\\n  echo \\"All files copied successfully.\\"\\nfi",
                 "addSpnToEnvironment": "false",
                 "useGlobalConfig": "false",
                 "cwd": "$(System.DefaultWorkingDirectory)",
@@ -38417,7 +38414,7 @@ var PRECOMPILED_TEMPLATES = {
                 "inlineScript": "az storage blob upload-batch --destination '$web/v/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
                 "addSpnToEnvironment": "false",
                 "useGlobalConfig": "false",
-                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, depth0 != null ? lookupProperty(depth0, "hasProtectedPaths") : depth0, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 218, "column": 13 }, "end": { "line": 245, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
+                "cwd": "$(System.DefaultWorkingDirectory)/` + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n                "failOnStandardError": "false",\n                "visibleAzLogin": "true"\n              }\n            }' + ((stack1 = lookupProperty(helpers, "if").call(alias3, depth0 != null ? lookupProperty(depth0, "preserveFiles") : depth0, { "name": "if", "hash": {}, "fn": container.program(0, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 218, "column": 13 }, "end": { "line": 245, "column": 20 } } })) != null ? stack1 : "") + '\n\n          ]\n        }\n      ],\n      "environmentOptions": {\n        "emailNotificationType": "OnlyOnFailure",\n        "emailRecipients": "release.environment.owner;release.creator",\n        "skipArtifactsDownload": false,\n        "timeoutInMinutes": 0,\n        "enableAccessToken": false,\n        "publishDeploymentStatus": true,\n        "badgeEnabled": false,\n        "autoLinkWorkItems": false,\n        "pullRequestDeploymentEnabled": false\n      },\n      "demands": [],\n      "conditions": [\n        {\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n          "conditionType": 8,\n          "value": ""\n        }\n      ],\n      "executionPolicy": {\n        "concurrencyCount": 1,\n        "queueDepthCount": 0\n      },\n      "schedules": [],\n      "retentionPolicy": {\n        "daysToKeep": 30,\n        "releasesToKeep": 3,\n        "retainBuild": true\n      },\n      "processParameters": {},\n      "properties": {}\n    }\n  ],\n  "artifacts": [\n    {\n      "sourceId": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + ":" + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '",\n      "type": "Build",\n      "alias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "definitionReference": {\n        "artifactSourceDefinitionUrl": {\n          "id": "",\n          "name": ""\n        },\n        "defaultVersionType": {\n          "id": "latestType",\n          "name": "Latest"\n        },\n        "definition": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "pipelineName") : stack1, depth0)) + '"\n        },\n        "project": {\n          "id": "",\n          "name": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "config") : depth0) != null ? lookupProperty(stack1, "adoProjectName") : stack1, depth0)) + '"\n        }\n      },\n      "isPrimary": true,\n      "isRetained": false\n    }\n  ],\n  "triggers": [\n    {\n      "artifactAlias": "' + alias2(alias1((stack1 = depth0 != null ? lookupProperty(depth0, "combination") : depth0) != null ? lookupProperty(stack1, "artifactAlias") : stack1, depth0)) + '",\n      "triggerConditions": [],\n      "triggerType": 1\n    }\n  ],\n  "releaseNameFormat": "Release-$(rev:r)",\n  "tags": [],\n  "properties": {}\n}\n';
   }, "main"), "useData": true }),
   "release-swa.json.hbs": import_handlebars.default.template({ "0": /* @__PURE__ */ __name(function(container, depth0, helpers, partials, data) {
     var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
@@ -38566,6 +38563,10 @@ var PipelineGeneratorService = class {
     const protectedPaths = config2.protectedPaths ?? [];
     const protectedPathsContainer = config2.protectedPathsContainer || `${mfe}-protected`;
     const hasProtectedPaths = protectedPaths.length > 0;
+    const preserveFiles = config2.preserveFiles ?? false;
+    const preserveSourceContainer = config2.preserveSourceContainer ?? "";
+    const preserveDestinationFolder = config2.preserveDestinationFolder ?? "";
+    const preserveDestinationContainer = config2.preserveDestinationContainer ?? "$web";
     const context2 = {
       combination,
       config: config2,
@@ -38574,7 +38575,11 @@ var PipelineGeneratorService = class {
       swaToken,
       appServiceName,
       hasProtectedPaths,
-      protectedPathsContainer
+      protectedPathsContainer,
+      preserveFiles,
+      preserveSourceContainer,
+      preserveDestinationFolder,
+      preserveDestinationContainer
     };
     const content = renderTemplate(templateName, context2);
     return {
@@ -40480,6 +40485,52 @@ var DEDUCTIONS = {
   info: 5,
   passing: 0
 };
+function validateJsonSyntax(content) {
+  try {
+    JSON.parse(content);
+    return null;
+  } catch (e) {
+    return {
+      platform: "ado",
+      healthScore: 0,
+      issues: [
+        {
+          severity: "critical",
+          code: "INVALID_JSON",
+          description: "File is not valid JSON and cannot be parsed.",
+          line: void 0,
+          suggestion: "Fix JSON syntax errors first. Common causes: missing comma, trailing comma, unquoted keys, or mismatched brackets.",
+          autoFixable: false
+        }
+      ]
+    };
+  }
+}
+__name(validateJsonSyntax, "validateJsonSyntax");
+function validateYamlSyntax(content) {
+  const lines = content.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\t/.test(line)) {
+      return {
+        platform: "gha",
+        healthScore: 0,
+        issues: [
+          {
+            severity: "critical",
+            code: "INVALID_YAML",
+            description: "File contains tab indentation which is not valid in YAML.",
+            line: i + 1,
+            suggestion: "Fix YAML syntax errors first. Common causes: incorrect indentation, tabs instead of spaces, or invalid characters.",
+            autoFixable: false
+          }
+        ]
+      };
+    }
+  }
+  return null;
+}
+__name(validateYamlSyntax, "validateYamlSyntax");
 var ValidatorService = class {
   static {
     __name(this, "ValidatorService");
@@ -40496,8 +40547,22 @@ var ValidatorService = class {
   }
   /**
    * Run all applicable rules and compute a health score.
+   * Performs syntax validation as step 0 before any rule checks.
    */
-  analyse(content, platformHint) {
+  analyse(content, platformHint, filename) {
+    const ext = filename ? filename.split(".").pop()?.toLowerCase() : void 0;
+    if (ext === "json") {
+      const syntaxError = validateJsonSyntax(content);
+      if (syntaxError) return syntaxError;
+    } else if (ext === "yml" || ext === "yaml") {
+      const syntaxError = validateYamlSyntax(content);
+      if (syntaxError) return syntaxError;
+    } else {
+      if (content.trimStart().startsWith("{") || content.trimStart().startsWith("[")) {
+        const syntaxError = validateJsonSyntax(content);
+        if (syntaxError) return syntaxError;
+      }
+    }
     const platform2 = this.detectPlatform(content, platformHint);
     const issues = [];
     for (const rule of RULES) {
@@ -40524,7 +40589,14 @@ var ValidatorService = class {
   /**
    * Apply all auto-fixable rules in sequence and produce a changelog.
    */
-  fix(content, platformHint) {
+  fix(content, platformHint, filename) {
+    const ext = filename ? filename.split(".").pop()?.toLowerCase() : void 0;
+    if (ext === "json" && validateJsonSyntax(content)) {
+      return { fixed: content, changelog: "File has JSON syntax errors \u2014 fix them before applying auto-fixes." };
+    }
+    if ((ext === "yml" || ext === "yaml") && validateYamlSyntax(content)) {
+      return { fixed: content, changelog: "File has YAML syntax errors \u2014 fix them before applying auto-fixes." };
+    }
     const platform2 = this.detectPlatform(content, platformHint);
     let fixed = content;
     const applied = [];
@@ -40560,7 +40632,7 @@ function validatorRoutes() {
     if (body.content.length > 1e5) {
       throw new AppError("File exceeds the 100 KB limit", 400);
     }
-    const result = validatorService.analyse(body.content, body.platform);
+    const result = validatorService.analyse(body.content, body.platform, body.filename);
     await supabase.from("validator_logs").insert({
       user_id: userId,
       filename: body.filename ?? null,
@@ -40581,7 +40653,7 @@ function validatorRoutes() {
     }
     const rawFilename = body.filename ?? "pipeline";
     const filename = rawFilename.replace(/\.\.\//g, "").replace(/\.\.\\/g, "").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
-    const { fixed, changelog } = validatorService.fix(body.content, body.platform);
+    const { fixed, changelog } = validatorService.fix(body.content, body.platform, body.filename);
     const { PipelineZipService: PipelineZipService2 } = await Promise.resolve().then(() => (init_pipeline_zip_service(), pipeline_zip_service_exports));
     const zipService4 = new PipelineZipService2();
     const ext = filename.endsWith(".json") ? ".json" : ".yml";

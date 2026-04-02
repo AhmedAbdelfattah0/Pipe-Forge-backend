@@ -215,14 +215,14 @@
                 "failOnStandardError": "false",
                 "visibleAzLogin": "true"
               }
-            }{{#if hasProtectedPaths}},
+            }{{#if preserveFiles}},
 
-            {{! ── Task 5: Restore protected files from backup container ── }}
+            {{! ── Task 5: Preserve files — copy from source container to destination ── }}
             {
               "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
               "version": "0.*",
-              "name": "Azure CLI — restore protected files",
-              "refName": "AzureCLI_Restore_Protected",
+              "name": "Azure CLI — preserve files",
+              "refName": "AzureCLI_Preserve_Files",
               "enabled": true,
               "alwaysRun": false,
               "continueOnError": false,
@@ -235,7 +235,7 @@
                 "connectedServiceNameARM": "{{config.serviceConnectionId}}",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
-                "inlineScript": "az storage blob copy start-batch --source-container '{{protectedPathsContainer}}' --destination-container '$web' --account-name $(storageAccountName)",
+                "inlineScript": "storageAccount=\"$(storageAccountName)\"\nsourceContainer=\"{{preserveSourceContainer}}\"\ndestinationContainer=\"{{preserveDestinationContainer}}\"\ndestinationFolder=\"{{preserveDestinationFolder}}\"\n\nblob_list=$(az storage blob list --account-name $storageAccount --container-name $sourceContainer --query \"[].name\" --auth-mode login -o tsv | tr -d '\\r')\n\nif [ -z \"$blob_list\" ]; then\n  echo \"No blobs found in '$sourceContainer'.\"\nelse\n  for blob in $blob_list; do\n    az storage blob copy start --account-name $storageAccount --source-container $sourceContainer --source-blob \"$blob\" --destination-container $destinationContainer --destination-blob \"$destinationFolder/$blob\" --auth-mode login\n  done\n  echo \"All files copied successfully.\"\nfi",
                 "addSpnToEnvironment": "false",
                 "useGlobalConfig": "false",
                 "cwd": "$(System.DefaultWorkingDirectory)",

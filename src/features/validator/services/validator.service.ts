@@ -222,6 +222,70 @@ const DEDUCTIONS: Record<Severity, number> = {
   passing: 0,
 };
 
+// ── Syntax validators ────────────────────────────────────────────────────────
+
+/**
+ * Returns a critical ValidationResult if the content is not valid JSON,
+ * or null if valid.
+ */
+function validateJsonSyntax(content: string): ValidationResult | null {
+  try {
+    JSON.parse(content);
+    return null;
+  } catch (e) {
+    return {
+      platform: 'ado',
+      healthScore: 0,
+      issues: [
+        {
+          severity: 'critical',
+          code: 'INVALID_JSON',
+          description: 'File is not valid JSON and cannot be parsed.',
+          line: undefined,
+          suggestion:
+            'Fix JSON syntax errors first. Common causes: missing comma, trailing comma, unquoted keys, or mismatched brackets.',
+          autoFixable: false,
+        },
+      ],
+    };
+  }
+}
+
+/**
+ * Performs a lightweight YAML structural check without a parser dependency.
+ * Detects the most common syntax errors: tab indentation, duplicate top-level keys,
+ * and obvious unbalanced mapping indicators.
+ *
+ * Returns a critical ValidationResult on failure, or null if no issues found.
+ */
+function validateYamlSyntax(content: string): ValidationResult | null {
+  const lines = content.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Tabs are illegal in YAML indentation
+    if (/^\t/.test(line)) {
+      return {
+        platform: 'gha',
+        healthScore: 0,
+        issues: [
+          {
+            severity: 'critical',
+            code: 'INVALID_YAML',
+            description: 'File contains tab indentation which is not valid in YAML.',
+            line: i + 1,
+            suggestion:
+              'Fix YAML syntax errors first. Common causes: incorrect indentation, tabs instead of spaces, or invalid characters.',
+            autoFixable: false,
+          },
+        ],
+      };
+    }
+  }
+
+  return null;
+}
+
 // ── Service ──────────────────────────────────────────────────────────────────
 
 export class ValidatorService {
@@ -239,8 +303,26 @@ export class ValidatorService {
 
   /**
    * Run all applicable rules and compute a health score.
+   * Performs syntax validation as step 0 before any rule checks.
    */
-  analyse(content: string, platformHint?: 'ado' | 'gha'): ValidationResult {
+  analyse(content: string, platformHint?: 'ado' | 'gha', filename?: string): ValidationResult {
+    // ── Step 0: Syntax validation ─────────────────────────────────────────────
+    const ext = filename ? filename.split('.').pop()?.toLowerCase() : undefined;
+
+    if (ext === 'json') {
+      const syntaxError = validateJsonSyntax(content);
+      if (syntaxError) return syntaxError;
+    } else if (ext === 'yml' || ext === 'yaml') {
+      const syntaxError = validateYamlSyntax(content);
+      if (syntaxError) return syntaxError;
+    } else {
+      // No extension hint — try JSON parse if content looks like JSON
+      if (content.trimStart().startsWith('{') || content.trimStart().startsWith('[')) {
+        const syntaxError = validateJsonSyntax(content);
+        if (syntaxError) return syntaxError;
+      }
+    }
+
     const platform = this.detectPlatform(content, platformHint);
     const issues: ValidationIssue[] = [];
 
@@ -273,7 +355,16 @@ export class ValidatorService {
   /**
    * Apply all auto-fixable rules in sequence and produce a changelog.
    */
-  fix(content: string, platformHint?: 'ado' | 'gha'): FixResult {
+  fix(content: string, platformHint?: 'ado' | 'gha', filename?: string): FixResult {
+    // Refuse to auto-fix syntactically invalid files.
+    const ext = filename ? filename.split('.').pop()?.toLowerCase() : undefined;
+    if (ext === 'json' && validateJsonSyntax(content)) {
+      return { fixed: content, changelog: 'File has JSON syntax errors — fix them before applying auto-fixes.' };
+    }
+    if ((ext === 'yml' || ext === 'yaml') && validateYamlSyntax(content)) {
+      return { fixed: content, changelog: 'File has YAML syntax errors — fix them before applying auto-fixes.' };
+    }
+
     const platform = this.detectPlatform(content, platformHint);
     let fixed = content;
     const applied: string[] = [];

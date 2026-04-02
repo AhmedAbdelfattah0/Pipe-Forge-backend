@@ -46,7 +46,7 @@ export function validatorRoutes() {
       throw new AppError('File exceeds the 100 KB limit', 400);
     }
 
-    const result = validatorService.analyse(body.content, body.platform);
+    const result = validatorService.analyse(body.content, body.platform, body.filename);
 
     // Log the validation attempt for monthly cap enforcement.
     await supabase.from('validator_logs').insert({
@@ -89,7 +89,7 @@ export function validatorRoutes() {
       .replace(/\.\.\\/g, '')
       .replace(/[^a-zA-Z0-9._-]/g, '_')
       .slice(0, 100);
-    const { fixed, changelog } = validatorService.fix(body.content, body.platform);
+    const { fixed, changelog } = validatorService.fix(body.content, body.platform, body.filename);
 
     // Build ZIP in-memory using the same pattern as the pipeline generator.
     const { PipelineZipService } = await import(
