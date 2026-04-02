@@ -39805,6 +39805,10 @@ var ENCRYPTED_RECORD_FIELDS = [
   "appServiceNames"
 ];
 function encryptConfigSnapshot(config2, keyHex) {
+  if (!keyHex) {
+    console.warn("[config-encryption] ENCRYPTION_KEY is not set \u2014 storing config snapshot unencrypted.");
+    return structuredClone(config2);
+  }
   const clone = structuredClone(config2);
   for (const field of ENCRYPTED_STRING_FIELDS) {
     const value = clone[field];
@@ -39826,6 +39830,7 @@ function encryptConfigSnapshot(config2, keyHex) {
 }
 __name(encryptConfigSnapshot, "encryptConfigSnapshot");
 function decryptConfigSnapshot(config2, keyHex) {
+  if (!keyHex) return structuredClone(config2);
   const clone = structuredClone(config2);
   for (const field of ENCRYPTED_STRING_FIELDS) {
     const value = clone[field];

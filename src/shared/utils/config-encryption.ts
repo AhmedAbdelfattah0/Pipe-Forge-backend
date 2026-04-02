@@ -29,11 +29,18 @@ const ENCRYPTED_RECORD_FIELDS = [
 /**
  * Returns a deep clone of `config` with sensitive fields encrypted.
  * Safe to call even if a field is missing or empty — skips gracefully.
+ * If `keyHex` is undefined or empty, returns the config unencrypted
+ * (with a console warning) so the route doesn't crash in environments
+ * where the secret has not been set yet.
  */
 export function encryptConfigSnapshot(
   config: Record<string, unknown>,
-  keyHex: string,
+  keyHex: string | undefined,
 ): Record<string, unknown> {
+  if (!keyHex) {
+    console.warn('[config-encryption] ENCRYPTION_KEY is not set — storing config snapshot unencrypted.');
+    return structuredClone(config);
+  }
   const clone = structuredClone(config);
 
   // Encrypt simple string fields.
@@ -65,11 +72,13 @@ export function encryptConfigSnapshot(
  * Returns a deep clone of `config` with sensitive fields decrypted.
  * Safe to call even if a field is missing, empty, or was never encrypted
  * (pre-encryption records) — returns original value on decryption failure.
+ * If `keyHex` is undefined or empty, returns the config as-is.
  */
 export function decryptConfigSnapshot(
   config: Record<string, unknown>,
-  keyHex: string,
+  keyHex: string | undefined,
 ): Record<string, unknown> {
+  if (!keyHex) return structuredClone(config);
   const clone = structuredClone(config);
 
   // Decrypt simple string fields.
