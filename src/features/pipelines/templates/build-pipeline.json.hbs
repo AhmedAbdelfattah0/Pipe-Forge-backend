@@ -63,13 +63,13 @@
             }
           },
 
-          {{! ── Step 2: npm install ── }}
+          {{! ── Step 2: npm ci ── }}
           {
             "environment": {},
             "enabled": true,
             "continueOnError": false,
             "alwaysRun": false,
-            "displayName": "npm install",
+            "displayName": "npm ci",
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
@@ -78,11 +78,95 @@
               "definitionType": "task"
             },
             "inputs": {
-              "script": "npm install {{config.installFlags}}",
+              "script": "npm ci",
               "workingDirectory": "",
               "failOnStderr": "false"
             }
-          }{{#if config.tokenReplacement.enabled}},
+          }{{#if config.qualityGates.enabled}}{{#if config.qualityGates.typescript.enabled}},
+
+          {{! ── Quality Gate: TypeScript ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Quality Gate — TypeScript check",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "{{config.qualityGates.typescript.command}}",
+              "workingDirectory": "$(Build.SourcesDirectory)",
+              "failOnStderr": "false"
+            }
+          }{{/if}}{{#if config.qualityGates.lint.enabled}},
+
+          {{! ── Quality Gate: ESLint ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Quality Gate — ESLint",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "{{config.qualityGates.lint.command}}",
+              "workingDirectory": "$(Build.SourcesDirectory)",
+              "failOnStderr": "false"
+            }
+          }{{/if}}{{#if config.qualityGates.tests.enabled}},
+
+          {{! ── Quality Gate: Unit Tests ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Quality Gate — Unit tests",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "{{config.qualityGates.tests.command}}",
+              "workingDirectory": "$(Build.SourcesDirectory)",
+              "failOnStderr": "false"
+            }
+          }{{/if}}{{#if config.qualityGates.format.enabled}},
+
+          {{! ── Quality Gate: Format Check ── }}
+          {
+            "environment": {},
+            "enabled": true,
+            "continueOnError": false,
+            "alwaysRun": false,
+            "displayName": "Quality Gate — Format check",
+            "timeoutInMinutes": 0,
+            "condition": "succeeded()",
+            "task": {
+              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "versionSpec": "2.*",
+              "definitionType": "task"
+            },
+            "inputs": {
+              "script": "{{config.qualityGates.format.command}}",
+              "workingDirectory": "$(Build.SourcesDirectory)",
+              "failOnStderr": "false"
+            }
+          }{{/if}}{{/if}}{{#if config.tokenReplacement.enabled}},
 
           {{! ── Step 3: FileTransform ── }}
           {

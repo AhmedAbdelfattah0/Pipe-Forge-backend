@@ -31,6 +31,14 @@ export interface Profile {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
+  full_name: string | null;
+  job_title: string | null;
+  company: string | null;
+  linkedin_url: string | null;
+  ado_organization: string | null;
+  ado_project: string | null;
+  default_platform: string | null;
+  github_username: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -70,8 +78,17 @@ export interface Subscription {
 // projects
 // =============================================================================
 
-/** Valid Azure DevOps deploy target types. */
-export type DeployTarget = 'storage-account' | 'static-web-app' | 'app-service';
+/** Valid deploy target types. */
+export type DeployTarget =
+  | 'storage-account'
+  | 'static-web-app'
+  | 'app-service'
+  | 'ftp-cpanel'
+  | 'vercel'
+  | 'netlify'
+  | 'firebase'
+  | 'github-pages'
+  | 'cloudflare-pages';
 
 /**
  * A full row from the `projects` table.
@@ -236,4 +253,124 @@ export interface InsertFeedback {
   company?: string | null;
   is_public?: boolean;
   source?: string;
+}
+
+// =============================================================================
+// admin_users
+// =============================================================================
+
+export interface AdminUser {
+  id: string;
+  created_at: string;
+}
+
+// =============================================================================
+// compensations
+// =============================================================================
+
+/** Valid compensation types. */
+export type CompensationType = 'free_month' | 'plan_upgrade';
+
+export interface Compensation {
+  id: string;
+  user_id: string;
+  admin_id: string;
+  type: CompensationType;
+  value: string;
+  reason: string | null;
+  applied_at: string;
+}
+
+export interface InsertCompensation {
+  user_id: string;
+  admin_id: string;
+  type: CompensationType;
+  value: string;
+  reason?: string | null;
+}
+
+// =============================================================================
+// coupons
+// =============================================================================
+
+/** Valid coupon discount types. */
+export type CouponType = 'percent' | 'fixed';
+
+/** Valid coupon billing cycle targets. */
+export type CouponBillingCycle = 'monthly' | 'annual' | 'both';
+
+export interface Coupon {
+  id: string;
+  code: string;
+  type: CouponType;
+  value: number;
+  applies_to: string;
+  billing_cycle: CouponBillingCycle;
+  max_uses: number | null;
+  uses_count: number;
+  expires_at: string | null;
+  description: string | null;
+  is_active: boolean;
+  stripe_coupon_id: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface InsertCoupon {
+  code: string;
+  type: CouponType;
+  value: number;
+  applies_to?: string;
+  billing_cycle?: CouponBillingCycle;
+  max_uses?: number | null;
+  expires_at?: string | null;
+  description?: string | null;
+  is_active?: boolean;
+  created_by?: string | null;
+}
+
+// =============================================================================
+// admin views
+// =============================================================================
+
+export interface AdminMetrics {
+  total_users: number;
+  active_subscriptions: number;
+  total_generations: number;
+  pending_feedback: number;
+}
+
+export interface AdminUserOverview {
+  user_id: string;
+  email: string;
+  plan: string;
+  mfe_used_this_month: number;
+  mfe_monthly_limit: number;
+  billing_cycle_start: string;
+  created_at: string;
+  display_name: string | null;
+  company: string | null;
+}
+
+// =============================================================================
+// diagnosis_logs
+// =============================================================================
+
+/**
+ * A full row from the `diagnosis_logs` table.
+ * Records each AI error diagnosis attempt for analytics and rate limiting.
+ */
+export interface DiagnosisLog {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  error_type: string | null;
+  created_at: string;
+}
+
+/** DTO for inserting a new diagnosis_logs row. */
+export interface InsertDiagnosisLog {
+  user_id: string;
+  project_id?: string | null;
+  error_type?: string | null;
 }

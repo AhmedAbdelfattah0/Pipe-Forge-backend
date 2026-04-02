@@ -1,14 +1,13 @@
 /**
  * validate-config.middleware.ts
  *
- * Zod schema validation middleware for the `GeneratorConfig` request body.
+ * Zod schema for the `GeneratorConfig` request body.
  *
- * Applied to `POST /api/pipelines/generate` before the route handler
- * executes. Returns a structured 400 response on validation failure so
- * the frontend can display field-level error messages.
+ * In the Hono migration, validation happens inline in route handlers
+ * using `GeneratorConfigSchema.safeParse()`. The Express middleware
+ * export has been removed.
  */
 
-import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
 // ─── Zod Schema ───────────────────────────────────────────────────────────────
@@ -24,10 +23,41 @@ const LanguageSchema = z.object({
   code: z.string().min(1, 'Language code is required').max(10).regex(/^[a-zA-Z]+$/),
 });
 
+const QualityGateScriptSchema = z.object({
+  enabled: z.boolean(),
+  command: z.string().max(500).regex(
+    /^[a-zA-Z0-9 _\-:./@=]+$/,
+    'Command contains invalid characters',
+  ),
+});
+
+const QualityGatesSchema = z.object({
+  enabled: z.boolean(),
+  typescript: QualityGateScriptSchema,
+  lint: QualityGateScriptSchema,
+  tests: QualityGateScriptSchema,
+  format: QualityGateScriptSchema,
+});
+
+const TokenMappingSchema = z.object({
+  tokenName: z.string().max(200).regex(
+    /^[a-zA-Z0-9_.-]+$/,
+    'Token name may only contain letters, numbers, underscores, dots, and hyphens',
+  ),
+  variableName: z.string().max(200).regex(
+    /^[a-zA-Z0-9_.-]+$/,
+    'Variable name may only contain letters, numbers, underscores, dots, and hyphens',
+  ),
+});
+
 const TokenReplacementSchema = z.object({
   enabled: z.boolean(),
-  environmentFilePath: z.string().max(300),
-  secretVariableNames: z.string().max(500),
+  filePattern: z.string().max(300).optional().default('src/environments/environment.*.ts'),
+  tokenFormat: z.enum(['#{TOKEN}#', '__TOKEN__', '${TOKEN}']).optional().default('#{TOKEN}#'),
+  tokenMappings: z.array(TokenMappingSchema).max(50).optional().default([]),
+  // Backward-compatible deprecated fields
+  environmentFilePath: z.string().max(300).optional().default(''),
+  secretVariableNames: z.string().max(500).optional().default(''),
 });
 
 const BuildScriptMatrixSchema = z.record(z.string(), z.string()).refine(
@@ -66,17 +96,11 @@ const GitHubSwaSecretNamesSchema = z.record(z.string(), z.string()).refine(
 
 /**
  * Full Zod validation schema mirroring the `GeneratorConfig` interface.
- *
- * Business rules enforced:
- * - At least one market must have `enabled: true`
- * - At least one environment must be selected
- * - At least one output format must be selected
- * - `deployTarget` must be one of the three valid values (or null)
  */
 export const GeneratorConfigSchema = z
   .object({
     // ── Step 1 — Project Info ───────────────────────────────────────────────
-    mfeName: z.string().min(1, 'MFE name is required').max(100).regex(/^[a-zA-Z0-9 _.-]+$/, 'MFE name may only contain letters, numbers, spaces, hyphens, underscores, and dots'),
+    projectName: z.string().min(1, 'Project name is required').max(100).regex(/^[a-zA-Z0-9 _.-]+$/, 'Project name may only contain letters, numbers, spaces, hyphens, underscores, and dots'),
     repositoryName: z.string().min(1, 'Repository name is required').max(200).regex(/^[a-zA-Z0-9 _./\\@-]+$/, 'Repository name contains invalid characters'),
     nodeVersion: z.enum(['18.x', '20.x', '22.x'], {
       errorMap: () => ({ message: "Node version must be '18.x', '20.x', or '22.x'" }),
@@ -103,16 +127,29 @@ export const GeneratorConfigSchema = z
     languages: z.array(LanguageSchema),
     buildScripts: BuildScriptMatrixSchema,
     tokenReplacement: TokenReplacementSchema,
+    qualityGates: QualityGatesSchema.optional(),
 
     // ── Step 4 — Deploy Target ──────────────────────────────────────────────
     deployTarget: z
-      .enum(['storage-account', 'static-web-app', 'app-service'])
+      .enum(['storage-account', 'static-web-app', 'app-service', 'ftp-cpanel', 'vercel', 'netlify', 'firebase', 'github-pages', 'cloudflare-pages'])
       .nullable(),
     storageAccounts: StorageAccountConfigSchema,
     swaTokens: StaticWebAppConfigSchema,
     appServiceNames: AppServiceConfigSchema,
     triggerPipelineAfterDeploy: z.boolean(),
     triggerPipelineId: z.string().max(50),
+    ftpRemotePath: z.string().max(500).optional().default('/public_html/'),
+    protectedPaths: z.array(z.string().max(500)).max(50).optional().default([]),
+    protectedPathsContainer: z.string().max(200).optional().default(''),
+    modernHosting: z.object({
+      vercelToken: z.string().max(200).optional(),
+      vercelOrgId: z.string().max(200).optional(),
+      vercelProjectId: z.string().max(200).optional(),
+      netlifySiteId: z.string().max(200).optional(),
+      firebaseProjectId: z.string().max(200).optional(),
+      ghPagesBranch: z.string().max(100).optional().default('gh-pages'),
+      cloudflarePagesProject: z.string().max(200).optional(),
+    }).optional(),
 
     // ── Platform Selection ─────────────────────────────────────────────────
     platform: z.enum(['azure-devops', 'github-actions']).optional().default('azure-devops'),
@@ -166,40 +203,3 @@ export const GeneratorConfigSchema = z
   );
 
 export type ValidatedGeneratorConfig = z.infer<typeof GeneratorConfigSchema>;
-
-// ─── Middleware ───────────────────────────────────────────────────────────────
-
-/**
- * Express middleware that validates `req.body` against `GeneratorConfigSchema`.
- *
- * On success: calls `next()` with the parsed (coerced) body re-assigned
- *   to `req.body` so downstream handlers receive the validated object.
- *
- * On failure: responds immediately with HTTP 400 and a structured error
- *   payload containing Zod's field-level `issues` array.
- *
- * @example
- * ```ts
- * router.post('/generate', validateConfigMiddleware, asyncHandler(handler));
- * ```
- */
-export function validateConfigMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
-  const result = GeneratorConfigSchema.safeParse(req.body);
-
-  if (!result.success) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Invalid generator configuration',
-      issues: result.error.issues,
-    });
-    return;
-  }
-
-  // Replace body with the validated (typed) object.
-  req.body = result.data;
-  next();
-}

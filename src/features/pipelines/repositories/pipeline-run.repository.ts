@@ -3,12 +3,11 @@
  *
  * Supabase repository for the `pipeline_runs` table.
  *
- * All writes use `supabaseAdmin` (service-role key) because RLS on
- * `pipeline_runs` is SELECT-only for authenticated users — inserts and
- * updates are performed server-side and must bypass RLS.
+ * Accepts a SupabaseClient in the constructor so that env bindings
+ * (service-role key) are provided per-request in Cloudflare Workers.
  */
 
-import { supabaseAdmin } from '../../../config/supabase.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppError } from '../../../shared/utils/app-error.js';
 import type {
   PipelineRun,
@@ -16,25 +15,11 @@ import type {
   PipelineRunStatus,
 } from '../../../database/types/database.types.js';
 
-// ─── Repository ───────────────────────────────────────────────────────────────
-
-/**
- * Data-access layer for the `pipeline_runs` table.
- *
- * Methods throw `AppError` on unexpected Supabase errors so that
- * `asyncHandler` can forward them to the global error middleware.
- */
 export class PipelineRunRepository {
-  /**
-   * Inserts a new `pipeline_runs` row and returns the created record.
-   *
-   * @param run - DTO containing `user_id`, `project_id`, and optional
-   *   initial `status` (defaults to `'pending'` in the DB).
-   * @returns The newly created `PipelineRun` row.
-   * @throws {AppError} 500 — if the Supabase insert fails.
-   */
+  constructor(private readonly supabase: SupabaseClient) {}
+
   async create(run: InsertPipelineRun): Promise<PipelineRun> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('pipeline_runs')
       .insert(run)
       .select()
@@ -47,16 +32,8 @@ export class PipelineRunRepository {
     return data as PipelineRun;
   }
 
-  /**
-   * Retrieves all pipeline runs belonging to a specific user,
-   * ordered from most recent to oldest.
-   *
-   * @param userId - The authenticated user's UUID.
-   * @returns An array of `PipelineRun` rows (may be empty).
-   * @throws {AppError} 500 — if the Supabase query fails.
-   */
   async findByUserId(userId: string): Promise<PipelineRun[]> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('pipeline_runs')
       .select('*')
       .eq('user_id', userId)
@@ -69,15 +46,8 @@ export class PipelineRunRepository {
     return (data ?? []) as PipelineRun[];
   }
 
-  /**
-   * Retrieves a single pipeline run by its primary key.
-   *
-   * @param id - The pipeline run UUID.
-   * @returns The `PipelineRun` row, or `null` if not found.
-   * @throws {AppError} 500 — if the Supabase query fails with an unexpected error.
-   */
   async findById(id: string): Promise<PipelineRun | null> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('pipeline_runs')
       .select('*')
       .eq('id', id)
@@ -90,19 +60,6 @@ export class PipelineRunRepository {
     return (data as PipelineRun | null) ?? null;
   }
 
-  /**
-   * Updates the `status`, optionally `file_count`, and optionally
-   * `error_message` of a pipeline run. Also sets `completed_at` to
-   * the current timestamp when transitioning to a terminal status
-   * (`'success'` or `'error'`).
-   *
-   * @param id - The pipeline run UUID to update.
-   * @param status - The new lifecycle status.
-   * @param fileCount - Optional file count (set on success).
-   * @param errorMessage - Optional human-readable error detail (set on error).
-   * @returns The updated `PipelineRun` row.
-   * @throws {AppError} 500 — if the Supabase update fails.
-   */
   async updateStatus(
     id: string,
     status: PipelineRunStatus,
@@ -118,7 +75,7 @@ export class PipelineRunRepository {
       ...(isTerminal && { completed_at: new Date().toISOString() }),
     };
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('pipeline_runs')
       .update(patch)
       .eq('id', id)

@@ -30,8 +30,26 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install {{installFlags}}
+        run: npm ci
 
+{{#if qualityGates.enabled}}
+{{#if qualityGates.typescript.enabled}}
+      - name: Quality Gate — TypeScript check
+        run: {{qualityGates.typescript.command}}
+{{/if}}
+{{#if qualityGates.lint.enabled}}
+      - name: Quality Gate — ESLint
+        run: {{qualityGates.lint.command}}
+{{/if}}
+{{#if qualityGates.tests.enabled}}
+      - name: Quality Gate — Unit tests
+        run: {{qualityGates.tests.command}}
+{{/if}}
+{{#if qualityGates.format.enabled}}
+      - name: Quality Gate — Format check
+        run: {{qualityGates.format.command}}
+{{/if}}
+{{/if}}
 {{#if useTokenReplacement}}
       - name: Replace tokens
         uses: cschleiden/replace-tokens@v1
@@ -70,3 +88,12 @@ jobs:
             --destination '$web' \
             --source './{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}' \
             --pattern '*.*'
+{{#if hasProtectedPaths}}
+
+      - name: Restore protected files
+        run: |
+          az storage blob copy start-batch \
+            --source-container '{{protectedPathsContainer}}' \
+            --destination-container '$web' \
+            --account-name {{storageAccountName}}
+{{/if}}

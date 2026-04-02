@@ -19,8 +19,8 @@
       "allowOverride": false,
       "isSecret": false
     },
-    "mfeName": {
-      "value": "{{config.mfeName}}",
+    "projectName": {
+      "value": "{{config.projectName}}",
       "allowOverride": false,
       "isSecret": false
     },
@@ -215,7 +215,34 @@
                 "failOnStandardError": "false",
                 "visibleAzLogin": "true"
               }
-            }
+            }{{#if hasProtectedPaths}},
+
+            {{! ── Task 5: Restore protected files from backup container ── }}
+            {
+              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
+              "version": "0.*",
+              "name": "Azure CLI — restore protected files",
+              "refName": "AzureCLI_Restore_Protected",
+              "enabled": true,
+              "alwaysRun": false,
+              "continueOnError": false,
+              "timeoutInMinutes": 0,
+              "retryCountOnTaskFailure": 0,
+              "definitionType": "task",
+              "overrideInputs": {},
+              "condition": "succeeded()",
+              "inputs": {
+                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "az storage blob copy start-batch --source-container '{{protectedPathsContainer}}' --destination-container '$web' --account-name $(storageAccountName)",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "cwd": "$(System.DefaultWorkingDirectory)",
+                "failOnStandardError": "false",
+                "visibleAzLogin": "true"
+              }
+            }{{/if}}
 
           ]
         }

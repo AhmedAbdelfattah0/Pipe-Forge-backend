@@ -1,11 +1,21 @@
-import { Router } from 'express';
-import { z } from 'zod';
-import { asyncHandler } from '../../../shared/utils/async-handler.js';
-import { authMiddleware } from '../../auth/middleware/auth.middleware.js';
-import { FeedbackRepository } from '../repositories/feedback.repository.js';
+/**
+ * feedback.routes.ts
+ *
+ * Feedback feature routes.
+ *
+ * Mounted at: `/api/feedback`
+ *
+ * Routes:
+ *   POST /api/feedback              — submit feedback (authenticated)
+ *   GET  /api/feedback/testimonials  — public testimonials (no auth)
+ */
 
-const router = Router();
-const feedbackRepo = new FeedbackRepository();
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { createSupabaseAdmin } from '../../../config/supabase.js';
+import { FeedbackRepository } from '../repositories/feedback.repository.js';
+import { authMiddleware } from '../../../shared/middleware/auth.js';
+import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
 const FeedbackSchema = z.object({
   generationId: z.string().uuid().optional().nullable(),
@@ -18,23 +28,43 @@ const FeedbackSchema = z.object({
   isPublic: z.boolean().optional().default(false),
 });
 
-// POST /api/feedback — submit feedback (authenticated)
-router.post(
-  '/',
-  authMiddleware,
-  asyncHandler(async (req, res) => {
-    const result = FeedbackSchema.safeParse(req.body);
+export function feedbackRoutes() {
+  const app = new Hono<HonoEnv>();
+
+  // GET /api/feedback/testimonials — public, no auth required
+  app.get('/testimonials', async (c) => {
+    const supabase = createSupabaseAdmin(c.env);
+    const feedbackRepo = new FeedbackRepository(supabase);
+    const testimonials = await feedbackRepo.getPublicTestimonials();
+    return c.json({
+      status: 'success',
+      testimonials: testimonials.map((t) => ({
+        id: t.id,
+        rating: t.rating,
+        displayName: t.display_name,
+        company: t.company,
+        featureRequest: t.feature_request,
+        pipelinesWorked: t.pipelines_worked,
+        createdAt: t.created_at,
+      })),
+    });
+  });
+
+  // POST /api/feedback — submit feedback (authenticated)
+  app.post('/', authMiddleware, async (c) => {
+    const body = await c.req.json();
+    const result = FeedbackSchema.safeParse(body);
     if (!result.success) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Invalid feedback data',
-        issues: result.error.issues,
-      });
-      return;
+      return c.json(
+        { status: 'error', message: 'Invalid feedback data', issues: result.error.issues },
+        400,
+      );
     }
 
-    const userId = req.user!.id;
+    const userId = c.get('userId');
     const data = result.data;
+    const supabase = createSupabaseAdmin(c.env);
+    const feedbackRepo = new FeedbackRepository(supabase);
 
     const feedback = await feedbackRepo.create({
       user_id: userId,
@@ -49,28 +79,8 @@ router.post(
       source: 'in-app',
     });
 
-    res.status(201).json({ status: 'success', feedback });
-  }),
-);
+    return c.json({ status: 'success', feedback }, 201);
+  });
 
-// GET /api/feedback/testimonials — public, no auth required
-router.get(
-  '/testimonials',
-  asyncHandler(async (_req, res) => {
-    const testimonials = await feedbackRepo.getPublicTestimonials();
-    res.json({
-      status: 'success',
-      testimonials: testimonials.map((t) => ({
-        id: t.id,
-        rating: t.rating,
-        displayName: t.display_name,
-        company: t.company,
-        featureRequest: t.feature_request,
-        pipelinesWorked: t.pipelines_worked,
-        createdAt: t.created_at,
-      })),
-    });
-  }),
-);
-
-export default router;
+  return app;
+}

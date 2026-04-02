@@ -1,7 +1,7 @@
 # ============================================================
 # PipeForge — Generated YAML CI Build Pipeline
 # Pipeline : {{combination.pipelineName}}
-# MFE      : {{config.mfeName}}
+# Project  : {{config.projectName}}
 # Market   : {{combination.market.name}} ({{combination.market.code}})
 # Env      : {{combination.environment}}
 # {{#if combination.language}}Language : {{combination.language.name}} ({{combination.language.code}}){{/if}}
@@ -42,10 +42,40 @@ steps:
       versionSpec: '$(nodeVersion)'
 
   # ── 2. Install dependencies ──────────────────────────────
-  - script: npm install {{config.installFlags}}
-    displayName: 'npm install'
+  - script: npm ci
+    displayName: 'npm ci'
     workingDirectory: '$(Build.SourcesDirectory)'
 
+{{#if config.qualityGates.enabled}}
+{{#if config.qualityGates.typescript.enabled}}
+  # ── Quality Gate: TypeScript ───────────────────────────────
+  - script: {{config.qualityGates.typescript.command}}
+    displayName: 'Quality Gate — TypeScript check'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+{{/if}}
+{{#if config.qualityGates.lint.enabled}}
+  # ── Quality Gate: ESLint ───────────────────────────────────
+  - script: {{config.qualityGates.lint.command}}
+    displayName: 'Quality Gate — ESLint'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+{{/if}}
+{{#if config.qualityGates.tests.enabled}}
+  # ── Quality Gate: Unit Tests ───────────────────────────────
+  - script: {{config.qualityGates.tests.command}}
+    displayName: 'Quality Gate — Unit tests'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+{{/if}}
+{{#if config.qualityGates.format.enabled}}
+  # ── Quality Gate: Format Check ─────────────────────────────
+  - script: {{config.qualityGates.format.command}}
+    displayName: 'Quality Gate — Format check'
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+{{/if}}
+{{/if}}
 {{#if config.tokenReplacement.enabled}}
   # ── 3. Token replacement (environment file transform) ────
   - task: FileTransform@2

@@ -1,33 +1,27 @@
 /**
  * auth.routes.ts
  *
- * Auth feature routes.
- *
- * All routes are protected by `authMiddleware` which is applied at
- * the router level in `src/index.ts` — every handler here can safely
- * assume `req.user` is populated.
+ * Auth feature routes — all protected by `authMiddleware` applied
+ * at the router level in `src/index.ts`.
  *
  * Mounted at: `GET /api/auth/me`
  */
 
-import { Router } from 'express';
-import { asyncHandler } from '../../../shared/utils/async-handler.js';
+import { Hono } from 'hono';
+import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
-const router = Router();
+export function authRoutes() {
+  const app = new Hono<HonoEnv>();
 
-/**
- * GET /api/auth/me
- *
- * Returns the currently authenticated user's identity payload as
- * extracted and verified by `authMiddleware`.
- *
- * Response shape: `{ id: string; email: string; role: string }`
- */
-router.get(
-  '/me',
-  asyncHandler(async (req, res) => {
-    res.status(200).json({ user: req.user });
-  }),
-);
+  app.get('/me', (c) => {
+    return c.json({
+      user: {
+        id: c.get('userId'),
+        email: c.get('userEmail'),
+        role: c.get('userRole'),
+      },
+    });
+  });
 
-export default router;
+  return app;
+}

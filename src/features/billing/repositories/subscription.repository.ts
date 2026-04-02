@@ -3,33 +3,19 @@
  *
  * Supabase repository for the `subscriptions` table.
  *
- * All operations use `supabaseAdmin` (service-role key) so that the
- * server can update usage counters without requiring the user's JWT
- * to be passed to the DB client.
+ * Accepts a SupabaseClient in the constructor so that env bindings
+ * (service-role key) are provided per-request in Cloudflare Workers.
  */
 
-import { supabaseAdmin } from '../../../config/supabase.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppError } from '../../../shared/utils/app-error.js';
 import type { Subscription } from '../../../database/types/database.types.js';
 
-// ─── Repository ───────────────────────────────────────────────────────────────
-
-/**
- * Data-access layer for the `subscriptions` table.
- *
- * Methods throw `AppError` on unexpected Supabase errors so that
- * `asyncHandler` can forward them to the global error middleware.
- */
 export class SubscriptionRepository {
-  /**
-   * Retrieves the active subscription for a given user.
-   *
-   * @param userId - The authenticated user's UUID.
-   * @returns The user's `Subscription` row, or `null` if none exists.
-   * @throws {AppError} 500 — if the Supabase query fails.
-   */
+  constructor(private readonly supabase: SupabaseClient) {}
+
   async findByUserId(userId: string): Promise<Subscription | null> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
@@ -42,26 +28,14 @@ export class SubscriptionRepository {
     return (data as Subscription | null) ?? null;
   }
 
-  /**
-   * Atomically increments `mfe_used_this_month` by 1 for the given user's
-   * subscription. Should be called after a successful pipeline generation.
-   *
-   * Uses a raw RPC call to perform an atomic increment rather than a
-   * read-modify-write cycle to avoid race conditions in concurrent requests.
-   *
-   * @param userId - The authenticated user's UUID.
-   * @throws {AppError} 404 — if no subscription row exists for the user.
-   * @throws {AppError} 500 — if the Supabase update fails.
-   */
   async incrementUsage(userId: string): Promise<void> {
-    // Fetch current value first so we can perform an accurate increment.
     const subscription = await this.findByUserId(userId);
 
     if (!subscription) {
       throw new AppError('Subscription not found for user', 404);
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await this.supabase
       .from('subscriptions')
       .update({
         mfe_used_this_month: subscription.mfe_used_this_month + 1,

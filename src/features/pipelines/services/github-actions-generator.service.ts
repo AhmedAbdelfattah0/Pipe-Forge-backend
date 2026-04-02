@@ -14,16 +14,25 @@ export type RenderedFile = GeneratedFile & { content: string };
 
 // Maps deploy target to the GHA template file name
 const GHA_TEMPLATE_MAP: Readonly<Record<string, string>> = {
+  // Azure targets
   'storage-account': 'github-actions/gha-storage.yml.hbs',
   'static-web-app': 'github-actions/gha-swa.yml.hbs',
   'app-service': 'github-actions/gha-appservice.yml.hbs',
+  // Traditional
+  'ftp-cpanel': 'github-actions/gha-ftp-cpanel.yml.hbs',
+  // Modern Hosting (GitHub Actions only)
+  'vercel': 'github-actions/gha-vercel.yml.hbs',
+  'netlify': 'github-actions/gha-netlify.yml.hbs',
+  'firebase': 'github-actions/gha-firebase.yml.hbs',
+  'github-pages': 'github-actions/gha-github-pages.yml.hbs',
+  'cloudflare-pages': 'github-actions/gha-cloudflare-pages.yml.hbs',
 };
 
 export class GitHubActionsGeneratorService {
   generate(config: GeneratorConfig): RenderedFile[] {
     const combinations = computePipelineCombinations(config);
     const generatedAt = new Date().toISOString();
-    const mfe = config.mfeName || 'my-app';
+    const mfe = config.projectName || 'my-app';
     const deployTarget = config.deployTarget ?? 'storage-account';
     const templateName = GHA_TEMPLATE_MAP[deployTarget] ?? 'github-actions/gha-storage.yml.hbs';
     const files: RenderedFile[] = [];
@@ -63,9 +72,18 @@ export class GitHubActionsGeneratorService {
     const triggers = githubConfig?.triggers ?? { push: true, pullRequest: true, manual: true, schedule: false };
     const cronExpression = githubConfig?.cronExpression ?? '0 2 * * 1';
 
+    const remotePath = config.ftpRemotePath ?? '/public_html/';
+
+    // Protected paths (storage account file preservation)
+    const protectedPaths = config.protectedPaths ?? [];
+    const protectedPathsContainer = config.protectedPathsContainer || `${mfe}-protected`;
+    const hasProtectedPaths = protectedPaths.length > 0;
+
+    const modernHosting = config.modernHosting ?? {};
+
     const context = {
       pipelineName: ghaPipelineName,
-      mfeName: mfe,
+      projectName: mfe,
       branch: combination.branchName,
       nodeVersion: config.nodeVersion,
       installFlags: config.installFlags,
@@ -77,8 +95,14 @@ export class GitHubActionsGeneratorService {
       deploymentPath: combination.deploymentPath,
       swaSecretName,
       appServiceName,
-      useTokenReplacement: config.tokenReplacement.enabled,
-      envFilePath: config.tokenReplacement.environmentFilePath,
+      remotePath,
+      hasProtectedPaths,
+      protectedPathsContainer,
+      qualityGates: config.qualityGates ?? { enabled: false, typescript: { enabled: false, command: '' }, lint: { enabled: false, command: '' }, tests: { enabled: false, command: '' }, format: { enabled: false, command: '' } },
+      useTokenReplacement: config.tokenReplacement?.enabled ?? false,
+      envFilePath: config.tokenReplacement?.filePattern ?? config.tokenReplacement?.environmentFilePath ?? '',
+      tokenMappings: config.tokenReplacement?.tokenMappings ?? [],
+      tokenFormat: config.tokenReplacement?.tokenFormat ?? '#{TOKEN}#',
       triggers: {
         push: triggers.push,
         pr: triggers.pullRequest,
@@ -86,6 +110,14 @@ export class GitHubActionsGeneratorService {
         schedule: triggers.schedule,
       },
       cronExpression,
+      // Modern hosting config
+      vercelToken: modernHosting.vercelToken ?? '',
+      vercelOrgId: modernHosting.vercelOrgId ?? '',
+      vercelProjectId: modernHosting.vercelProjectId ?? '',
+      netlifySiteId: modernHosting.netlifySiteId ?? '',
+      firebaseProjectId: modernHosting.firebaseProjectId ?? '',
+      ghPagesBranch: modernHosting.ghPagesBranch ?? 'gh-pages',
+      cloudflarePagesProject: modernHosting.cloudflarePagesProject ?? '',
     };
 
     const content = renderTemplate(templateName, context);
@@ -145,12 +177,21 @@ export class GitHubActionsGeneratorService {
       }
     }
 
+    const modernHosting = config.modernHosting ?? {};
+
     const context = {
-      mfeName: mfe,
+      projectName: mfe,
       deployTarget: config.deployTarget,
-      useTokenReplacement: config.tokenReplacement.enabled,
+      useTokenReplacement: config.tokenReplacement?.enabled ?? false,
+      tokenMappings: config.tokenReplacement?.tokenMappings ?? [],
       swaSecrets,
       generatedAt,
+      // Modern hosting config for secrets guide
+      vercelProjectId: modernHosting.vercelProjectId ?? '',
+      netlifySiteId: modernHosting.netlifySiteId ?? '',
+      firebaseProjectId: modernHosting.firebaseProjectId ?? '',
+      ghPagesBranch: modernHosting.ghPagesBranch ?? 'gh-pages',
+      cloudflarePagesProject: modernHosting.cloudflarePagesProject ?? '',
     };
 
     const content = renderTemplate('github-actions/secrets-guide.md.hbs', context);

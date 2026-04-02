@@ -9,7 +9,7 @@ import type { GeneratorConfig } from '../../src/features/pipelines/models/genera
 
 export const validConfig: GeneratorConfig = {
   // Step 1 — Project Info
-  mfeName: 'shoppingbag',
+  projectName: 'shoppingbag',
   repositoryName: 'shopping-bag-mfe',
   nodeVersion: '20.x',
   distFolder: 'dist/shoppingbag',
@@ -39,6 +39,9 @@ export const validConfig: GeneratorConfig = {
   },
   tokenReplacement: {
     enabled: false,
+    filePattern: 'src/environments/environment.*.ts',
+    tokenFormat: '#{TOKEN}#',
+    tokenMappings: [],
     environmentFilePath: '',
     secretVariableNames: '',
   },

@@ -111,7 +111,7 @@ describe('computePipelineCombinations', () => {
   describe('pipeline naming — {ENV}-{MARKET}-{MFE} pattern', () => {
     it('formats single-language pipeline name as ENV-MARKET-MFE', () => {
       const config = buildConfig({
-        mfeName: 'shoppingbag',
+        projectName: 'shoppingbag',
         markets: [{ name: 'UAE', code: 'ae', enabled: true }],
         environments: ['QA'],
         isMultiLanguage: false,
@@ -124,7 +124,7 @@ describe('computePipelineCombinations', () => {
 
     it('formats multi-language pipeline name as ENV-MARKET-MFE-LANG', () => {
       const config = buildConfig({
-        mfeName: 'checkout',
+        projectName: 'checkout',
         markets: [{ name: 'UAE', code: 'ae', enabled: true }],
         environments: ['PROD'],
         isMultiLanguage: true,
@@ -137,9 +137,9 @@ describe('computePipelineCombinations', () => {
       expect(combination.pipelineName).toBe('PROD-UAE-CHECKOUT-EN');
     });
 
-    it('uppercases the mfeName in the pipeline name regardless of input case', () => {
+    it('uppercases the projectName in the pipeline name regardless of input case', () => {
       const config = buildConfig({
-        mfeName: 'my-app',
+        projectName: 'my-app',
         markets: [{ name: 'UAE', code: 'ae', enabled: true }],
         environments: ['QA'],
         isMultiLanguage: false,
@@ -214,9 +214,9 @@ describe('computePipelineCombinations', () => {
   });
 
   describe('deploymentPath', () => {
-    it('uses {marketCode}/{mfeName} format in single-language mode', () => {
+    it('uses {marketCode}/{projectName} format in single-language mode', () => {
       const config = buildConfig({
-        mfeName: 'shoppingbag',
+        projectName: 'shoppingbag',
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
         isMultiLanguage: false,
@@ -227,9 +227,9 @@ describe('computePipelineCombinations', () => {
       expect(combination.deploymentPath).toBe('sa/shoppingbag');
     });
 
-    it('uses {marketCode}/{langCode}/{mfeName} format in multi-language mode', () => {
+    it('uses {marketCode}/{langCode}/{projectName} format in multi-language mode', () => {
       const config = buildConfig({
-        mfeName: 'shoppingbag',
+        projectName: 'shoppingbag',
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
         isMultiLanguage: true,
@@ -242,9 +242,9 @@ describe('computePipelineCombinations', () => {
       expect(combination.deploymentPath).toBe('sa/en/shoppingbag');
     });
 
-    it('uses lowercase mfeName in deploymentPath even if mfeName was provided in mixed case', () => {
+    it('uses lowercase projectName in deploymentPath even if projectName was provided in mixed case', () => {
       const config = buildConfig({
-        mfeName: 'ShoppingBag',
+        projectName: 'ShoppingBag',
         markets: [{ name: 'UAE', code: 'ae', enabled: true }],
         environments: ['QA'],
         isMultiLanguage: false,

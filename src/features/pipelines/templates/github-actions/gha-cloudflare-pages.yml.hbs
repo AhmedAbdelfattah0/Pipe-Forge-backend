@@ -1,0 +1,71 @@
+name: {{pipelineName}}
+
+on:
+{{#if triggers.push}}
+  push:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.pr}}
+  pull_request:
+    branches: [ {{branch}} ]
+{{/if}}
+{{#if triggers.manual}}
+  workflow_dispatch:
+{{/if}}
+{{#if triggers.schedule}}
+  schedule:
+    - cron: '{{cronExpression}}'
+{{/if}}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '{{nodeVersion}}'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+{{#if qualityGates.enabled}}
+{{#if qualityGates.typescript.enabled}}
+      - name: Quality Gate — Type check
+        run: {{qualityGates.typescript.command}}
+{{/if}}
+{{#if qualityGates.lint.enabled}}
+      - name: Quality Gate — Lint
+        run: {{qualityGates.lint.command}}
+{{/if}}
+{{#if qualityGates.tests.enabled}}
+      - name: Quality Gate — Unit tests
+        run: {{qualityGates.tests.command}}
+{{/if}}
+{{#if qualityGates.format.enabled}}
+      - name: Quality Gate — Format check
+        run: {{qualityGates.format.command}}
+{{/if}}
+{{/if}}
+{{#if useTokenReplacement}}
+{{#each tokenMappings}}
+      - name: Replace token — {{this.tokenName}}
+        run: |
+          find . -path ./node_modules -prune -o -name "*.ts" -print | xargs sed -i 's/#{{{this.tokenName}}}#/$\{{ secrets.{{this.variableName}} }}/g' 2>/dev/null || true
+{{/each}}
+{{/if}}
+
+      - name: Build
+        run: npm run {{buildScript}}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: $\{{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: $\{{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: {{cloudflarePagesProject}}
+          directory: ./{{distFolder}}{{#if hasBrowserSubfolder}}/browser{{/if}}
+          gitHubToken: $\{{ secrets.GITHUB_TOKEN }}

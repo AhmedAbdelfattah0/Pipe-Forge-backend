@@ -64,7 +64,7 @@ export class PipelineGeneratorService {
   generate(config: GeneratorConfig): RenderedFile[] {
     const combinations = computePipelineCombinations(config);
     const generatedAt = new Date().toISOString();
-    const mfe = config.mfeName || 'my-app';
+    const mfe = config.projectName || 'my-app';
     const files: RenderedFile[] = [];
 
     for (const combination of combinations) {
@@ -162,11 +162,18 @@ export class PipelineGeneratorService {
     const swaToken = config.swaTokens[resourceKey] ?? '';
     const appServiceName = config.appServiceNames[resourceKey] ?? '';
 
+    // Protected paths (storage account file preservation)
+    const protectedPaths = config.protectedPaths ?? [];
+    const protectedPathsContainer = config.protectedPathsContainer || `${mfe}-protected`;
+    const hasProtectedPaths = protectedPaths.length > 0;
+
     const context: ReleaseTemplateContext & {
       generatedAt: string;
       storageAccountName: string;
       swaToken: string;
       appServiceName: string;
+      hasProtectedPaths: boolean;
+      protectedPathsContainer: string;
     } = {
       combination,
       config,
@@ -174,6 +181,8 @@ export class PipelineGeneratorService {
       storageAccountName,
       swaToken,
       appServiceName,
+      hasProtectedPaths,
+      protectedPathsContainer,
     };
 
     const content = renderTemplate(templateName, context);

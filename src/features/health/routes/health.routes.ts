@@ -1,24 +1,25 @@
-import { Router } from 'express';
-import { asyncHandler } from '../../../shared/utils/async-handler.js';
-import { config } from '../../../config/env.js';
-
-const router = Router();
-
 /**
- * GET /api/health
+ * health.routes.ts
  *
  * Health-check endpoint for deployment monitoring and load-balancer probes.
- * Returns a 200 response with the current server timestamp and environment.
+ *
+ * Mounted at: `/api/health`
  */
-router.get(
-  '/',
-  asyncHandler(async (_req, res) => {
-    res.status(200).json({
+
+import { Hono } from 'hono';
+import type { Env } from '../../../config/env.js';
+
+type HonoEnv = { Bindings: Env };
+
+export function healthRoutes() {
+  const app = new Hono<HonoEnv>();
+
+  app.get('/', (c) =>
+    c.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      environment: config.NODE_ENV,
-    });
-  }),
-);
+    }),
+  );
 
-export default router;
+  return app;
+}

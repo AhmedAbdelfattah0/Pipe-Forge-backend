@@ -3,16 +3,13 @@
  *
  * Supabase repository for the `projects` table (generation history).
  *
- * Read operations use `supabaseAdmin` for simplicity (the user_id filter
- * enforces ownership at the application layer). Insert/delete operations
- * also use `supabaseAdmin` since the service role bypasses RLS for writes.
+ * Accepts a SupabaseClient in the constructor so that env bindings
+ * (service-role key) are provided per-request in Cloudflare Workers.
  */
 
-import { supabaseAdmin } from '../../../config/supabase.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppError } from '../../../shared/utils/app-error.js';
 import type { Project, InsertProject } from '../../../database/types/database.types.js';
-
-// ─── Query options ────────────────────────────────────────────────────────────
 
 /** Optional parameters for `findByUserId` pagination and search. */
 export interface FindProjectsOptions {
@@ -24,32 +21,16 @@ export interface FindProjectsOptions {
   offset?: number;
 }
 
-// ─── Repository ───────────────────────────────────────────────────────────────
-
-/**
- * Data-access layer for the `projects` (history) table.
- *
- * Methods throw `AppError` on unexpected Supabase errors so that
- * `asyncHandler` can forward them to the global error middleware.
- */
 export class HistoryRepository {
-  /**
-   * Retrieves a paginated, optionally filtered list of projects for a user.
-   *
-   * Projects are ordered by `generated_at` descending (most recent first).
-   *
-   * @param userId - The authenticated user's UUID.
-   * @param options - Optional pagination and search parameters.
-   * @returns An array of matching `Project` rows.
-   * @throws {AppError} 500 — if the Supabase query fails.
-   */
+  constructor(private readonly supabase: SupabaseClient) {}
+
   async findByUserId(
     userId: string,
     options: FindProjectsOptions = {},
   ): Promise<Project[]> {
     const { search, limit = 20, offset = 0 } = options;
 
-    let query = supabaseAdmin
+    let query = this.supabase
       .from('projects')
       .select('*')
       .eq('user_id', userId)
@@ -57,7 +38,11 @@ export class HistoryRepository {
       .range(offset, offset + limit - 1);
 
     if (search && search.trim().length > 0) {
-      const term = search.trim();
+      // Escape PostgREST special characters to prevent filter injection
+      const term = search.trim()
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+        .replace(/\\/g, '\\\\');
       query = query.or(`mfe_name.ilike.%${term}%,repository_name.ilike.%${term}%`);
     }
 
@@ -70,15 +55,8 @@ export class HistoryRepository {
     return (data ?? []) as Project[];
   }
 
-  /**
-   * Retrieves a single project by its primary key.
-   *
-   * @param id - The project UUID.
-   * @returns The `Project` row (including `config_snapshot`), or `null` if not found.
-   * @throws {AppError} 500 — if the Supabase query fails with an unexpected error.
-   */
   async findById(id: string): Promise<Project | null> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('projects')
       .select('*')
       .eq('id', id)
@@ -91,15 +69,8 @@ export class HistoryRepository {
     return (data as Project | null) ?? null;
   }
 
-  /**
-   * Inserts a new project row and returns the created record.
-   *
-   * @param project - DTO with all required project fields.
-   * @returns The newly created `Project` row.
-   * @throws {AppError} 500 — if the Supabase insert fails.
-   */
   async create(project: InsertProject): Promise<Project> {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from('projects')
       .insert(project)
       .select()
@@ -112,19 +83,8 @@ export class HistoryRepository {
     return data as Project;
   }
 
-  /**
-   * Deletes a project after verifying the requesting user is the owner.
-   *
-   * Performs an ownership check by filtering on both `id` and `user_id`.
-   * If no row is deleted (wrong user or non-existent id), throws 404.
-   *
-   * @param id - The project UUID to delete.
-   * @param userId - The authenticated user's UUID (ownership assertion).
-   * @throws {AppError} 404 — if the project does not exist or belongs to another user.
-   * @throws {AppError} 500 — if the Supabase delete fails with an unexpected error.
-   */
   async deleteById(id: string, userId: string): Promise<void> {
-    const { error, count } = await supabaseAdmin
+    const { error, count } = await this.supabase
       .from('projects')
       .delete({ count: 'exact' })
       .eq('id', id)

@@ -32,6 +32,7 @@ const ENCRYPTED_RECORD_FIELDS = [
  */
 export function encryptConfigSnapshot(
   config: Record<string, unknown>,
+  keyHex: string,
 ): Record<string, unknown> {
   const clone = structuredClone(config);
 
@@ -39,7 +40,7 @@ export function encryptConfigSnapshot(
   for (const field of ENCRYPTED_STRING_FIELDS) {
     const value = clone[field];
     if (typeof value === 'string' && value.length > 0) {
-      clone[field] = encrypt(value);
+      clone[field] = encrypt(value, keyHex);
     }
   }
 
@@ -50,7 +51,7 @@ export function encryptConfigSnapshot(
       const encrypted: Record<string, string> = {};
       for (const [key, value] of Object.entries(record as Record<string, string>)) {
         encrypted[key] = typeof value === 'string' && value.length > 0
-          ? encrypt(value)
+          ? encrypt(value, keyHex)
           : value;
       }
       clone[field] = encrypted;
@@ -67,6 +68,7 @@ export function encryptConfigSnapshot(
  */
 export function decryptConfigSnapshot(
   config: Record<string, unknown>,
+  keyHex: string,
 ): Record<string, unknown> {
   const clone = structuredClone(config);
 
@@ -75,7 +77,7 @@ export function decryptConfigSnapshot(
     const value = clone[field];
     if (typeof value === 'string' && value.includes(':')) {
       try {
-        clone[field] = decrypt(value);
+        clone[field] = decrypt(value, keyHex);
       } catch {
         // Value was not encrypted (legacy record) — leave as-is.
       }
@@ -90,7 +92,7 @@ export function decryptConfigSnapshot(
       for (const [key, value] of Object.entries(record as Record<string, string>)) {
         if (typeof value === 'string' && value.includes(':')) {
           try {
-            decrypted[key] = decrypt(value);
+            decrypted[key] = decrypt(value, keyHex);
           } catch {
             decrypted[key] = value; // Legacy or non-encrypted value.
           }

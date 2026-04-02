@@ -3,68 +3,65 @@
  *
  * Enforces subscription-tier limits before a pipeline generation is allowed.
  *
- * Applied as middleware on `POST /api/pipelines/generate` after auth and
- * config validation. Reads the user's subscription from Supabase and checks:
- *   1. Monthly MFE generation count (mfe_used_this_month >= mfe_monthly_limit)
- *   2. Market count in the request config (enabled markets > market_limit)
- *
- * A limit value of `-1` means unlimited — the check is skipped in that case.
+ * Converted from Express middleware to a plain async function that accepts
+ * a SupabaseClient, userId, and config, and throws HTTPException on violation.
  */
 
-import type { Request, Response, NextFunction } from 'express';
+import { HTTPException } from 'hono/http-exception';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { SubscriptionRepository } from '../repositories/subscription.repository.js';
-import { AppError } from '../../../shared/utils/app-error.js';
-import { asyncHandler } from '../../../shared/utils/async-handler.js';
+import { PlansRepository } from '../repositories/plans.repository.js';
 import type { ValidatedGeneratorConfig } from '../../pipelines/middleware/validate-config.middleware.js';
 
-const subscriptionRepository = new SubscriptionRepository();
-
 /**
- * Express middleware that checks whether the authenticated user is within
- * their plan's generation and market limits.
+ * Checks whether the authenticated user is within their plan's
+ * generation and market limits.
  *
- * Preconditions:
- * - `req.user` is populated by `authMiddleware`.
- * - `req.body` has been validated by `validateConfigMiddleware` (typed as
- *   `ValidatedGeneratorConfig`).
- *
- * @throws {AppError} 403 — if the monthly generation limit is reached.
- * @throws {AppError} 403 — if the number of enabled markets exceeds the plan limit.
- * @throws {AppError} 404 — if no subscription record exists for the user.
+ * @throws {HTTPException} 403 — if the monthly generation limit is reached.
+ * @throws {HTTPException} 403 — if the number of enabled markets exceeds the plan limit.
+ * @throws {HTTPException} 404 — if no subscription record exists for the user.
  */
-export const planLimiterMiddleware = asyncHandler(
-  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
-    const userId = req.user!.id;
-    const config = req.body as ValidatedGeneratorConfig;
+export async function checkPlanLimits(
+  supabase: SupabaseClient,
+  userId: string,
+  config: ValidatedGeneratorConfig,
+): Promise<void> {
+  const repo = new SubscriptionRepository(supabase);
+  const subscription = await repo.findByUserId(userId);
 
-    const subscription = await subscriptionRepository.findByUserId(userId);
+  if (!subscription) {
+    throw new HTTPException(404, {
+      message: 'No active subscription found. Please contact support.',
+    });
+  }
 
-    if (!subscription) {
-      throw new AppError('No active subscription found. Please contact support.', 404);
-    }
+  // ── Resolve monthly limit — prefer plans table over subscription snapshot ──
+  const plansRepo = new PlansRepository(supabase);
+  const planLimit = await plansRepo.getMonthlyLimit(subscription.plan).catch(() => null);
 
-    // ── Check monthly MFE generation limit ──────────────────────────────────
-    const { mfe_monthly_limit, mfe_used_this_month, market_limit } = subscription;
+  // planLimit null = unlimited. Fallback to subscription.mfe_monthly_limit if plan not found.
+  const resolvedLimit = planLimit !== null
+    ? planLimit
+    : (subscription.mfe_monthly_limit === -1 ? null : subscription.mfe_monthly_limit);
 
-    if (mfe_monthly_limit !== -1 && mfe_used_this_month >= mfe_monthly_limit) {
-      throw new AppError(
-        `Monthly generation limit reached (${mfe_used_this_month}/${mfe_monthly_limit}). ` +
-          'Please upgrade your plan to continue generating pipelines.',
-        403,
-      );
-    }
+  const { mfe_used_this_month, market_limit } = subscription;
 
-    // ── Check market count limit ─────────────────────────────────────────────
-    const enabledMarketCount = config.markets.filter((m) => m.enabled).length;
+  if (resolvedLimit !== null && mfe_used_this_month >= resolvedLimit) {
+    throw new HTTPException(403, {
+      message:
+        `Monthly generation limit reached (${mfe_used_this_month}/${resolvedLimit}). ` +
+        'Please upgrade your plan to continue generating pipelines.',
+    });
+  }
 
-    if (market_limit !== -1 && enabledMarketCount > market_limit) {
-      throw new AppError(
+  // ── Check market count limit ─────────────────────────────────────────────
+  const enabledMarketCount = config.markets.filter((m) => m.enabled).length;
+
+  if (market_limit !== -1 && enabledMarketCount > market_limit) {
+    throw new HTTPException(403, {
+      message:
         `Market limit exceeded. Your plan allows ${market_limit} market(s) per generation ` +
-          `but ${enabledMarketCount} were selected. Please upgrade your plan.`,
-        403,
-      );
-    }
-
-    next();
-  },
-);
+        `but ${enabledMarketCount} were selected. Please upgrade your plan.`,
+    });
+  }
+}

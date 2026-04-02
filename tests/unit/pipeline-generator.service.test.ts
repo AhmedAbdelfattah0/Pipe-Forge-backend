@@ -149,10 +149,10 @@ describe('PipelineGeneratorService.generate', () => {
     });
   });
 
-  describe('file paths include mfeName', () => {
-    it('places files in a folder named {mfeName}-pipelines/', () => {
+  describe('file paths include projectName', () => {
+    it('places files in a folder named {projectName}-pipelines/', () => {
       const config = buildConfig({
-        mfeName: 'checkout',
+        projectName: 'checkout',
         outputFormats: ['yaml'],
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
@@ -166,9 +166,9 @@ describe('PipelineGeneratorService.generate', () => {
       });
     });
 
-    it('build files are placed in {mfeName}-pipelines/build/', () => {
+    it('build files are placed in {projectName}-pipelines/build/', () => {
       const config = buildConfig({
-        mfeName: 'checkout',
+        projectName: 'checkout',
         outputFormats: ['yaml'],
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
@@ -183,9 +183,9 @@ describe('PipelineGeneratorService.generate', () => {
       });
     });
 
-    it('release files are placed in {mfeName}-pipelines/release/', () => {
+    it('release files are placed in {projectName}-pipelines/release/', () => {
       const config = buildConfig({
-        mfeName: 'checkout',
+        projectName: 'checkout',
         outputFormats: ['classic-json'],
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
@@ -200,9 +200,9 @@ describe('PipelineGeneratorService.generate', () => {
       });
     });
 
-    it('README is placed in {mfeName}-pipelines/', () => {
+    it('README is placed in {projectName}-pipelines/', () => {
       const config = buildConfig({
-        mfeName: 'checkout',
+        projectName: 'checkout',
         outputFormats: ['yaml'],
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],
@@ -383,7 +383,7 @@ describe('PipelineGeneratorService.generate', () => {
   describe('file names', () => {
     it('yaml file has .yml extension named after the pipelineName', () => {
       const config = buildConfig({
-        mfeName: 'shoppingbag',
+        projectName: 'shoppingbag',
         outputFormats: ['yaml'],
         markets: [{ name: 'KSA', code: 'sa', enabled: true }],
         environments: ['QA'],

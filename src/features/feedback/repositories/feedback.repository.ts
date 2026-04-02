@@ -1,10 +1,12 @@
-import { supabaseAdmin } from '../../../config/supabase.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppError } from '../../../shared/utils/app-error.js';
 import type { InsertFeedback, Feedback } from '../../../database/types/database.types.js';
 
 export class FeedbackRepository {
+  constructor(private readonly supabase: SupabaseClient) {}
+
   async create(data: InsertFeedback): Promise<Feedback> {
-    const { data: row, error } = await supabaseAdmin
+    const { data: row, error } = await this.supabase
       .from('feedback')
       .insert(data)
       .select()
@@ -17,7 +19,7 @@ export class FeedbackRepository {
   }
 
   async getPublicTestimonials(): Promise<Feedback[]> {
-    const { data: rows, error } = await supabaseAdmin
+    const { data: rows, error } = await this.supabase
       .from('feedback')
       .select('*')
       .eq('is_public', true)

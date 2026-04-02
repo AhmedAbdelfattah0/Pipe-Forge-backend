@@ -55,7 +55,7 @@ function toPipelineMarketCode(name: string): string {
  */
 export function computePipelineCombinations(config: GeneratorConfig): PipelineCombination[] {
   const combinations: PipelineCombination[] = [];
-  const mfeName = config.mfeName.toUpperCase();
+  const projectName = config.projectName.toUpperCase();
   const isMulti = config.isMultiLanguage;
   const enabledMarkets = config.markets.filter((m) => m.enabled);
 
@@ -67,26 +67,26 @@ export function computePipelineCombinations(config: GeneratorConfig): PipelineCo
 
       if (isMulti) {
         for (const lang of config.languages) {
-          const pipelineName = `${env}-${marketCode}-${mfeName}-${lang.name}`;
+          const pipelineName = `${env}-${marketCode}-${projectName}-${lang.name}`;
           combinations.push({
             market,
             environment: env,
             language: lang,
             pipelineName,
             artifactAlias: `_${pipelineName}`,
-            deploymentPath: `${market.code}/${lang.code}/${config.mfeName.toLowerCase()}`,
+            deploymentPath: `${market.code}/${lang.code}/${config.projectName.toLowerCase()}`,
             buildScript: config.buildScripts[`${market.code}-${env}-${lang.code}`] ?? '',
             branchName,
           });
         }
       } else {
-        const pipelineName = `${env}-${marketCode}-${mfeName}`;
+        const pipelineName = `${env}-${marketCode}-${projectName}`;
         combinations.push({
           market,
           environment: env,
           pipelineName,
           artifactAlias: `_${pipelineName}`,
-          deploymentPath: `${market.code}/${config.mfeName.toLowerCase()}`,
+          deploymentPath: `${market.code}/${config.projectName.toLowerCase()}`,
           buildScript: config.buildScripts[`${market.code}-${env}`] ?? '',
           branchName,
         });

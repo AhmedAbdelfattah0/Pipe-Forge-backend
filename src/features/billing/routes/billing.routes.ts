@@ -11,69 +11,45 @@
  *   GET /api/billing/usage         — current month usage vs limit
  */
 
-import { Router } from 'express';
-import { asyncHandler } from '../../../shared/utils/async-handler.js';
-import { SubscriptionRepository } from '../repositories/subscription.repository.js';
+import { Hono } from 'hono';
 import { AppError } from '../../../shared/utils/app-error.js';
+import { createSupabaseAdmin } from '../../../config/supabase.js';
+import { SubscriptionRepository } from '../repositories/subscription.repository.js';
+import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
-const router = Router();
-const subscriptionRepository = new SubscriptionRepository();
+export function billingRoutes() {
+  const app = new Hono<HonoEnv>();
 
-// ─── GET /subscription ────────────────────────────────────────────────────────
+  // ─── GET /subscription ──────────────────────────────────────────────────────
 
-/**
- * GET /api/billing/subscription
- *
- * Returns the authenticated user's full subscription record including
- * plan tier, status, and all limit/usage fields.
- *
- * Response shape: `{ subscription: Subscription }`
- */
-router.get(
-  '/subscription',
-  asyncHandler(async (req, res) => {
-    const userId = req.user!.id;
+  app.get('/subscription', async (c) => {
+    const userId = c.get('userId');
+    const supabase = createSupabaseAdmin(c.env);
+    const subscriptionRepository = new SubscriptionRepository(supabase);
+
     const subscription = await subscriptionRepository.findByUserId(userId);
 
     if (!subscription) {
       throw new AppError('No subscription found for this user', 404);
     }
 
-    res.status(200).json({ subscription });
-  }),
-);
+    return c.json({ subscription });
+  });
 
-// ─── GET /usage ───────────────────────────────────────────────────────────────
+  // ─── GET /usage ─────────────────────────────────────────────────────────────
 
-/**
- * GET /api/billing/usage
- *
- * Returns a concise usage summary for the current billing cycle.
- *
- * Response shape:
- * ```json
- * {
- *   "usage": {
- *     "mfe_used_this_month": 2,
- *     "mfe_monthly_limit": 3,
- *     "market_limit": 1,
- *     "plan": "free",
- *     "billing_cycle_start": "2026-03-01T00:00:00.000Z"
- *   }
- * }
- * ```
- */
-router.get(
-  '/usage',
-  asyncHandler(async (req, res) => {
-    const userId = req.user!.id;
+  app.get('/usage', async (c) => {
+    const userId = c.get('userId');
+    const supabase = createSupabaseAdmin(c.env);
+    const subscriptionRepository = new SubscriptionRepository(supabase);
+
     const subscription = await subscriptionRepository.findByUserId(userId);
 
     if (!subscription) {
       throw new AppError('No subscription found for this user', 404);
     }
 
-    res.status(200).json({
+    return c.json({
       usage: {
         mfe_used_this_month: subscription.mfe_used_this_month,
         mfe_monthly_limit: subscription.mfe_monthly_limit,
@@ -82,7 +58,7 @@ router.get(
         billing_cycle_start: subscription.billing_cycle_start,
       },
     });
-  }),
-);
+  });
 
-export default router;
+  return app;
+}

@@ -8,8 +8,17 @@
 
 // ─── Union Types ─────────────────────────────────────────────────────────────
 
-/** The Azure DevOps deploy-target strategy. */
-export type DeployTarget = 'storage-account' | 'static-web-app' | 'app-service';
+/** The deploy-target strategy. */
+export type DeployTarget =
+  | 'storage-account'
+  | 'static-web-app'
+  | 'app-service'
+  | 'ftp-cpanel'
+  | 'vercel'
+  | 'netlify'
+  | 'firebase'
+  | 'github-pages'
+  | 'cloudflare-pages';
 
 /** CI/CD platform selection */
 export type CICDPlatform = 'azure-devops' | 'github-actions';
@@ -92,20 +101,58 @@ export interface AppServiceConfig {
   [key: string]: string;
 }
 
-/** Configuration for the Azure Pipelines FileTransform@2 token-replacement step. */
+/** A single quality-gate check (e.g. TypeScript, lint, tests, format). */
+export interface QualityGateScript {
+  enabled: boolean;
+  command: string;
+}
+
+/** Optional quality gates that run before the main build step. */
+export interface QualityGates {
+  enabled: boolean;
+  typescript: QualityGateScript;
+  lint: QualityGateScript;
+  tests: QualityGateScript;
+  format: QualityGateScript;
+}
+
+/** A single token name / pipeline variable name pair. */
+export interface TokenMapping {
+  tokenName: string;
+  variableName: string;
+}
+
+/** Configuration for the token-replacement step during build. */
 export interface TokenReplacement {
   /** Whether the token-replacement step should be emitted. */
   enabled: boolean;
-  /** Path to the environment JSON file (relative to source root). */
+  /** Glob pattern of files to search (e.g. "src/environments/environment.*.ts"). */
+  filePattern: string;
+  /** Token format style used in the files. */
+  tokenFormat: '#{TOKEN}#' | '__TOKEN__' | '${TOKEN}';
+  /** Per-token name mappings. */
+  tokenMappings: TokenMapping[];
+  /** @deprecated Use filePattern instead. */
   environmentFilePath: string;
-  /** Comma-separated list of pipeline variable names whose values substitute tokens. */
+  /** @deprecated Use tokenMappings instead. */
   secretVariableNames: string;
+}
+
+/** Modern hosting config for platforms outside Azure. */
+export interface ModernHostingConfig {
+  vercelToken?: string;
+  vercelOrgId?: string;
+  vercelProjectId?: string;
+  netlifySiteId?: string;
+  firebaseProjectId?: string;
+  ghPagesBranch?: string;
+  cloudflarePagesProject?: string;
 }
 
 /** Full configuration payload produced by the frontend wizard. */
 export interface GeneratorConfig {
   // ── Step 1 — Project Info ─────────────────────────────────────────────────
-  mfeName: string;
+  projectName: string;
   repositoryName: string;
   nodeVersion: '18.x' | '20.x' | '22.x';
   distFolder: string;
@@ -126,6 +173,7 @@ export interface GeneratorConfig {
   languages: Language[];
   buildScripts: BuildScriptMatrix;
   tokenReplacement: TokenReplacement;
+  qualityGates?: QualityGates;
 
   // ── Step 4 — Deploy Target ────────────────────────────────────────────────
   deployTarget: DeployTarget | null;
@@ -134,6 +182,14 @@ export interface GeneratorConfig {
   appServiceNames: AppServiceConfig;
   triggerPipelineAfterDeploy: boolean;
   triggerPipelineId: string;
+  /** FTP remote path for cPanel/FTP deployments, e.g. "/public_html/". */
+  ftpRemotePath?: string;
+  /** Paths to preserve across storage account deployments (backup/restore). */
+  protectedPaths?: string[];
+  /** Container name for storing protected path backups. */
+  protectedPathsContainer?: string;
+  /** Modern hosting platform config (Vercel, Netlify, Firebase, GitHub Pages, Cloudflare Pages). */
+  modernHosting?: ModernHostingConfig;
 
   // ── Step 5 — Output ───────────────────────────────────────────────────────
   outputFormats: OutputFormat[];
@@ -175,8 +231,8 @@ export interface PipelineCombination {
   artifactAlias: string;
   /**
    * Blob/CDN deployment path.
-   * Multi: `"{marketCode}/{langCode}/{mfeName}"` e.g. `"sa/en/shoppingbag"`
-   * Single: `"{marketCode}/{mfeName}"` e.g. `"sa/shoppingbag"`
+   * Multi: `"{marketCode}/{langCode}/{projectName}"` e.g. `"sa/en/shoppingbag"`
+   * Single: `"{marketCode}/{projectName}"` e.g. `"sa/shoppingbag"`
    */
   deploymentPath: string;
   /** npm build-script name resolved from the BuildScriptMatrix, e.g. `"ksaqa"`. */

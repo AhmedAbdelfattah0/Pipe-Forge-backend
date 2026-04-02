@@ -47,7 +47,7 @@ describe('PipelineZipService.createZip', () => {
       const entries = buildEntries('shoppingbag');
       const result = await service.createZip(entries, 'shoppingbag');
 
-      expect(result).toBeInstanceOf(Buffer);
+      expect(result).toBeInstanceOf(ArrayBuffer);
     });
   });
 
@@ -57,8 +57,9 @@ describe('PipelineZipService.createZip', () => {
       const buffer = await service.createZip(entries, 'shoppingbag');
 
       // ZIP local-file-header signature: PK\x03\x04 (or PK\x05\x06 for empty archive)
-      expect(buffer[0]).toBe(0x50); // 'P'
-      expect(buffer[1]).toBe(0x4b); // 'K'
+      const bytes = new Uint8Array(buffer);
+      expect(bytes[0]).toBe(0x50); // 'P'
+      expect(bytes[1]).toBe(0x4b); // 'K'
     });
 
     it('can be parsed by JSZip without throwing', async () => {
@@ -137,9 +138,10 @@ describe('PipelineZipService.createZip', () => {
     it('empty files array still produces a valid ZIP with correct magic bytes', async () => {
       const buffer = await service.createZip([], 'myapp');
 
-      expect(buffer).toBeInstanceOf(Buffer);
-      expect(buffer[0]).toBe(0x50);
-      expect(buffer[1]).toBe(0x4b);
+      expect(buffer).toBeInstanceOf(ArrayBuffer);
+      const bytes = new Uint8Array(buffer);
+      expect(bytes[0]).toBe(0x50);
+      expect(bytes[1]).toBe(0x4b);
     });
   });
 

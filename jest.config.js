@@ -17,6 +17,7 @@ const config = {
           module: 'CommonJS',
           moduleResolution: 'node',
           esModuleInterop: true,
+          types: ['jest', '@cloudflare/workers-types'],
         },
       },
     ],

@@ -65,57 +65,57 @@ describe('GeneratorConfigSchema', () => {
     });
   });
 
-  describe('mfeName validation', () => {
-    it('fails when mfeName is missing', () => {
+  describe('projectName validation', () => {
+    it('fails when projectName is missing', () => {
       const payload = buildPayload() as Partial<GeneratorConfig>;
-      delete (payload as Record<string, unknown>)['mfeName'];
+      delete (payload as Record<string, unknown>)['projectName'];
 
       const result = GeneratorConfigSchema.safeParse(payload);
 
       expect(result.success).toBe(false);
     });
 
-    it('fails when mfeName is an empty string', () => {
-      const result = GeneratorConfigSchema.safeParse(buildPayload({ mfeName: '' }));
+    it('fails when projectName is an empty string', () => {
+      const result = GeneratorConfigSchema.safeParse(buildPayload({ projectName: '' }));
 
       expect(result.success).toBe(false);
     });
 
-    it('fails when mfeName exceeds 100 characters', () => {
+    it('fails when projectName exceeds 100 characters', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: 'a'.repeat(101) }),
+        buildPayload({ projectName: 'a'.repeat(101) }),
       );
 
       expect(result.success).toBe(false);
     });
 
-    it('accepts mfeName of exactly 100 characters', () => {
+    it('accepts projectName of exactly 100 characters', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: 'a'.repeat(100) }),
+        buildPayload({ projectName: 'a'.repeat(100) }),
       );
 
       expect(result.success).toBe(true);
     });
 
-    it('accepts mfeName with spaces', () => {
+    it('accepts projectName with spaces', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: 'my app' }),
+        buildPayload({ projectName: 'my app' }),
       );
 
       expect(result.success).toBe(true);
     });
 
-    it('fails when mfeName contains special chars like @', () => {
+    it('fails when projectName contains special chars like @', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: 'my@app' }),
+        buildPayload({ projectName: 'my@app' }),
       );
 
       expect(result.success).toBe(false);
     });
 
-    it('accepts mfeName with hyphens and underscores', () => {
+    it('accepts projectName with hyphens and underscores', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: 'my-app_v2' }),
+        buildPayload({ projectName: 'my-app_v2' }),
       );
 
       expect(result.success).toBe(true);
@@ -276,7 +276,7 @@ describe('GeneratorConfigSchema', () => {
   describe('Zod error structure', () => {
     it('returns issues array on failure', () => {
       const result = GeneratorConfigSchema.safeParse(
-        buildPayload({ mfeName: '' }),
+        buildPayload({ projectName: '' }),
       );
 
       expect(result.success).toBe(false);
