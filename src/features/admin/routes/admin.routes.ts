@@ -28,6 +28,11 @@ export function adminRoutes() {
   // but they are kept as defence-in-depth.
   app.use('*', requireAdminMiddleware);
 
+  // Lightweight admin identity check — used by the frontend guard ONLY.
+  // requireAdminMiddleware above already verified admin_users membership,
+  // so this handler has nothing left to do except confirm access.
+  app.get('/me', (c) => c.json({ isAdmin: true }));
+
   app.route('/', adminMetricsRoutes());
   app.route('/', adminUsersRoutes());
   app.route('/', adminPlansRoutes());
