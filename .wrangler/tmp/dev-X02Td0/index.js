@@ -38939,7 +38939,53 @@ function decryptConfigSnapshot(config2, keyHex) {
 }
 __name(decryptConfigSnapshot, "decryptConfigSnapshot");
 
+// src/shared/services/error-log.service.ts
+init_modules_watch_stub();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
+init_performance2();
+var ErrorLogService = class {
+  constructor(supabase) {
+    this.supabase = supabase;
+  }
+  static {
+    __name(this, "ErrorLogService");
+  }
+  async logError(params) {
+    try {
+      await this.supabase.from("error_logs").insert({
+        user_id: params.userId ?? null,
+        user_email: params.userEmail ?? null,
+        endpoint: params.endpoint,
+        http_method: params.httpMethod,
+        request_payload: params.requestPayload ?? null,
+        error_type: params.errorType,
+        error_message: params.errorMessage,
+        stack_trace: params.stackTrace ?? null,
+        http_status: params.httpStatus,
+        user_facing_error: params.userFacingError,
+        platform: params.platform ?? null,
+        deploy_target: params.deployTarget ?? null,
+        node_version: params.nodeVersion ?? null,
+        markets_count: params.marketsCount ?? null
+      });
+    } catch {
+    }
+  }
+};
+
 // src/features/pipelines/routes/pipeline.routes.ts
+function classifyError(err, httpStatus) {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (httpStatus === 401 || httpStatus === 403) return "AUTH_ERROR";
+  if (msg.includes("template") || msg.includes("handlebars")) return "TEMPLATE_ERROR";
+  if (msg.includes("zip")) return "ZIP_ERROR";
+  if (httpStatus === 400) return "VALIDATION_ERROR";
+  if (msg.includes("supabase") || msg.includes("database") || msg.includes("db")) return "DB_ERROR";
+  if (msg.includes("config") || msg.includes("combination")) return "CONFIG_ERROR";
+  return "UNKNOWN_ERROR";
+}
+__name(classifyError, "classifyError");
 var generatorService = new PipelineGeneratorService();
 var githubActionsGeneratorService = new GitHubActionsGeneratorService();
 var zipService = new PipelineZipService();
@@ -39018,6 +39064,23 @@ function pipelineRoutes() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown generation error";
       await runRepository.updateStatus(run.id, "error", void 0, message);
+      const httpStatus = err instanceof AppError ? err.statusCode : 500;
+      const userFacingError = err instanceof AppError && err.isOperational ? err.message : "Pipeline generation failed. Please try again.";
+      const errorLogger = new ErrorLogService(supabase);
+      await errorLogger.logError({
+        userId,
+        endpoint: "/api/pipelines/generate",
+        httpMethod: "POST",
+        requestPayload: config2,
+        errorType: classifyError(err, httpStatus),
+        errorMessage: message,
+        stackTrace: err instanceof Error ? err.stack : void 0,
+        httpStatus,
+        userFacingError,
+        platform: "azure-devops",
+        deployTarget: config2.deployTarget ?? void 0,
+        marketsCount: config2.markets.filter((m) => m.enabled).length
+      });
       throw err;
     }
   });
@@ -39094,6 +39157,23 @@ function pipelineRoutes() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown generation error";
       await runRepository.updateStatus(run.id, "error", void 0, message);
+      const httpStatus = err instanceof AppError ? err.statusCode : 500;
+      const userFacingError = err instanceof AppError && err.isOperational ? err.message : "Pipeline generation failed. Please try again.";
+      const errorLogger = new ErrorLogService(supabase);
+      await errorLogger.logError({
+        userId,
+        endpoint: "/api/pipelines/generate/github-actions",
+        httpMethod: "POST",
+        requestPayload: config2,
+        errorType: classifyError(err, httpStatus),
+        errorMessage: message,
+        stackTrace: err instanceof Error ? err.stack : void 0,
+        httpStatus,
+        userFacingError,
+        platform: "github-actions",
+        deployTarget: config2.deployTarget ?? void 0,
+        marketsCount: config2.markets.filter((m) => m.enabled).length
+      });
       throw err;
     }
   });
@@ -40020,6 +40100,120 @@ function adminHealthRoutes() {
 }
 __name(adminHealthRoutes, "adminHealthRoutes");
 
+// src/features/admin/routes/admin-errors.routes.ts
+init_modules_watch_stub();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_process();
+init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
+init_performance2();
+async function requireAdmin8(supabase, userId) {
+  const { data, error: error3 } = await supabase.from("admin_users").select("id").eq("id", userId).single();
+  if (error3 || !data) throw new AppError("Forbidden", 403);
+}
+__name(requireAdmin8, "requireAdmin");
+function mapErrorLog(row) {
+  return {
+    id: row["id"],
+    userId: row["user_id"],
+    userEmail: row["user_email"],
+    endpoint: row["endpoint"],
+    httpMethod: row["http_method"],
+    requestPayload: row["request_payload"],
+    errorType: row["error_type"],
+    errorMessage: row["error_message"],
+    stackTrace: row["stack_trace"],
+    httpStatus: row["http_status"],
+    userFacingError: row["user_facing_error"],
+    platform: row["platform"],
+    deployTarget: row["deploy_target"],
+    nodeVersion: row["node_version"],
+    marketsCount: row["markets_count"],
+    resolved: row["resolved"],
+    resolvedAt: row["resolved_at"],
+    resolvedNote: row["resolved_note"],
+    createdAt: row["created_at"]
+  };
+}
+__name(mapErrorLog, "mapErrorLog");
+function adminErrorsRoutes() {
+  const app2 = new Hono2();
+  app2.get("/errors/stats", async (c) => {
+    const userId = c.get("userId");
+    const supabase = createSupabaseAdmin(c.env);
+    await requireAdmin8(supabase, userId);
+    const { data, error: error3 } = await supabase.from("error_logs").select("error_type, platform, endpoint, resolved, created_at");
+    if (error3) {
+      throw new AppError(`Failed to fetch error stats: ${error3.message}`, 500);
+    }
+    const rows = data ?? [];
+    const cutoff = Date.now() - 864e5;
+    const byType = {};
+    const byEndpoint = {};
+    const byPlatform = {};
+    for (const row of rows) {
+      const type = row.error_type ?? "UNKNOWN";
+      byType[type] = (byType[type] ?? 0) + 1;
+      byEndpoint[row.endpoint] = (byEndpoint[row.endpoint] ?? 0) + 1;
+      const platform2 = row.platform ?? "unknown";
+      byPlatform[platform2] = (byPlatform[platform2] ?? 0) + 1;
+    }
+    return c.json({
+      total: rows.length,
+      unresolved: rows.filter((r) => !r.resolved).length,
+      last24h: rows.filter((r) => new Date(r.created_at).getTime() > cutoff).length,
+      byType,
+      byEndpoint,
+      byPlatform
+    });
+  });
+  app2.get("/errors", async (c) => {
+    const userId = c.get("userId");
+    const supabase = createSupabaseAdmin(c.env);
+    await requireAdmin8(supabase, userId);
+    const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(c.req.query("limit") ?? "20", 10) || 20));
+    const offset = (page - 1) * limit;
+    const resolved = c.req.query("resolved");
+    const errorType = c.req.query("errorType");
+    const platform2 = c.req.query("platform");
+    let query = supabase.from("error_logs").select("*", { count: "exact" }).range(offset, offset + limit - 1).order("created_at", { ascending: false });
+    if (resolved === "true") query = query.eq("resolved", true);
+    if (resolved === "false") query = query.eq("resolved", false);
+    if (errorType) query = query.eq("error_type", errorType);
+    if (platform2) query = query.eq("platform", platform2);
+    const { data, error: error3, count: count3 } = await query;
+    if (error3) {
+      throw new AppError(`Failed to fetch error logs: ${error3.message}`, 500);
+    }
+    return c.json({
+      errors: (data ?? []).map((row) => mapErrorLog(row)),
+      total: count3 ?? 0,
+      page,
+      limit
+    });
+  });
+  app2.patch("/errors/:id", async (c) => {
+    const userId = c.get("userId");
+    const id = c.req.param("id");
+    const supabase = createSupabaseAdmin(c.env);
+    await requireAdmin8(supabase, userId);
+    const body = await c.req.json();
+    if (typeof body.resolved !== "boolean") {
+      throw new AppError('"resolved" must be a boolean', 400);
+    }
+    const { data, error: error3 } = await supabase.from("error_logs").update({
+      resolved: body.resolved,
+      resolved_at: (/* @__PURE__ */ new Date()).toISOString(),
+      resolved_note: body.resolvedNote ?? null
+    }).eq("id", id).select().single();
+    if (error3) {
+      throw new AppError(`Failed to update error log: ${error3.message}`, 500);
+    }
+    return c.json({ error: mapErrorLog(data) });
+  });
+  return app2;
+}
+__name(adminErrorsRoutes, "adminErrorsRoutes");
+
 // src/features/admin/routes/admin.routes.ts
 function adminRoutes() {
   const app2 = new Hono2();
@@ -40032,6 +40226,7 @@ function adminRoutes() {
   app2.route("/", adminFeedbackRoutes());
   app2.route("/", adminGenerationsRoutes());
   app2.route("/", adminHealthRoutes());
+  app2.route("/", adminErrorsRoutes());
   return app2;
 }
 __name(adminRoutes, "adminRoutes");
@@ -40327,6 +40522,15 @@ async function checkFeatureLock(supabase, userId, feature) {
     if (limit !== null && limit <= 0) {
       throwFeatureLocked(feature);
     }
+    if (limit !== null && limit > 0) {
+      const startOfMonth = /* @__PURE__ */ new Date();
+      startOfMonth.setUTCDate(1);
+      startOfMonth.setUTCHours(0, 0, 0, 0);
+      const { count: count3 } = await supabase.from("validator_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", startOfMonth.toISOString());
+      if ((count3 ?? 0) >= limit) {
+        throwFeatureLocked(feature);
+      }
+    }
     return;
   }
   if (feature === "generate") {
@@ -40355,6 +40559,11 @@ function validatorRoutes() {
       throw new AppError("File exceeds the 100 KB limit", 400);
     }
     const result = validatorService.analyse(body.content, body.platform);
+    await supabase.from("validator_logs").insert({
+      user_id: userId,
+      filename: body.filename ?? null,
+      platform: body.platform ?? null
+    });
     return c.json(result);
   });
   app2.post("/fix", async (c) => {
@@ -40381,6 +40590,11 @@ function validatorRoutes() {
       ],
       "pipeline-fix"
     );
+    await supabase.from("validator_logs").insert({
+      user_id: userId,
+      filename: body.filename ?? null,
+      platform: body.platform ?? null
+    });
     return new Response(zipBuffer, {
       headers: {
         "Content-Type": "application/zip",

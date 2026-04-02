@@ -28,6 +28,20 @@ import { SubscriptionRepository } from '../../billing/repositories/subscription.
 import { GenerationRepository } from '../../feedback/repositories/generation.repository.js';
 import { encryptConfigSnapshot } from '../../../shared/utils/config-encryption.js';
 import type { HonoEnv } from '../../../shared/middleware/auth.js';
+import { ErrorLogService } from '../../../shared/services/error-log.service.js';
+
+// ─── Error classification ────────────────────────────────────────────────────
+
+function classifyError(err: unknown, httpStatus: number): string {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (httpStatus === 401 || httpStatus === 403)                return 'AUTH_ERROR';
+  if (msg.includes('template') || msg.includes('handlebars'))  return 'TEMPLATE_ERROR';
+  if (msg.includes('zip'))                                     return 'ZIP_ERROR';
+  if (httpStatus === 400)                                      return 'VALIDATION_ERROR';
+  if (msg.includes('supabase') || msg.includes('database') || msg.includes('db')) return 'DB_ERROR';
+  if (msg.includes('config') || msg.includes('combination'))   return 'CONFIG_ERROR';
+  return 'UNKNOWN_ERROR';
+}
 
 // Services are stateless — safe to instantiate once.
 const generatorService = new PipelineGeneratorService();
@@ -130,6 +144,29 @@ export function pipelineRoutes() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown generation error';
       await runRepository.updateStatus(run.id, 'error', undefined, message);
+
+      const httpStatus = err instanceof AppError ? err.statusCode : 500;
+      const userFacingError =
+        err instanceof AppError && err.isOperational
+          ? err.message
+          : 'Pipeline generation failed. Please try again.';
+
+      const errorLogger = new ErrorLogService(supabase);
+      await errorLogger.logError({
+        userId,
+        endpoint: '/api/pipelines/generate',
+        httpMethod: 'POST',
+        requestPayload: config as unknown as object,
+        errorType: classifyError(err, httpStatus),
+        errorMessage: message,
+        stackTrace: err instanceof Error ? err.stack : undefined,
+        httpStatus,
+        userFacingError,
+        platform: 'azure-devops',
+        deployTarget: config.deployTarget ?? undefined,
+        marketsCount: config.markets.filter((m) => m.enabled).length,
+      });
+
       throw err;
     }
   });
@@ -224,6 +261,29 @@ export function pipelineRoutes() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown generation error';
       await runRepository.updateStatus(run.id, 'error', undefined, message);
+
+      const httpStatus = err instanceof AppError ? err.statusCode : 500;
+      const userFacingError =
+        err instanceof AppError && err.isOperational
+          ? err.message
+          : 'Pipeline generation failed. Please try again.';
+
+      const errorLogger = new ErrorLogService(supabase);
+      await errorLogger.logError({
+        userId,
+        endpoint: '/api/pipelines/generate/github-actions',
+        httpMethod: 'POST',
+        requestPayload: config as unknown as object,
+        errorType: classifyError(err, httpStatus),
+        errorMessage: message,
+        stackTrace: err instanceof Error ? err.stack : undefined,
+        httpStatus,
+        userFacingError,
+        platform: 'github-actions',
+        deployTarget: config.deployTarget ?? undefined,
+        marketsCount: config.markets.filter((m) => m.enabled).length,
+      });
+
       throw err;
     }
   });

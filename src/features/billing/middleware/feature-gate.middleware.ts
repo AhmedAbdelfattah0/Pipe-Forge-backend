@@ -122,9 +122,24 @@ export async function checkFeatureLock(
       throwFeatureLocked(feature);
     }
 
-    // Soft monthly cap: enforce via validator_logs table when available.
-    // For now (no validator_logs table yet), only the hard-0 block is active.
-    // limit > 0 or null → allowed.
+    // Soft monthly cap: count this user's validations since the start of the month.
+    if (limit !== null && limit > 0) {
+      const startOfMonth = new Date();
+      startOfMonth.setUTCDate(1);
+      startOfMonth.setUTCHours(0, 0, 0, 0);
+
+      const { count } = await supabase
+        .from('validator_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('created_at', startOfMonth.toISOString());
+
+      if ((count ?? 0) >= limit) {
+        throwFeatureLocked(feature);
+      }
+    }
+
+    // limit === null → unlimited; no action needed.
     return;
   }
 

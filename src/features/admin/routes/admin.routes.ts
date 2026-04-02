@@ -19,6 +19,7 @@ import { adminCouponsRoutes }     from './admin-coupons.routes.js';
 import { adminFeedbackRoutes }    from './admin-feedback.routes.js';
 import { adminGenerationsRoutes } from './admin-generations.routes.js';
 import { adminHealthRoutes }      from './admin-health.routes.js';
+import { adminErrorsRoutes }      from './admin-errors.routes.js';
 
 export function adminRoutes() {
   const app = new Hono<HonoEnv>();
@@ -40,6 +41,7 @@ export function adminRoutes() {
   app.route('/', adminFeedbackRoutes());
   app.route('/', adminGenerationsRoutes());
   app.route('/', adminHealthRoutes());
+  app.route('/', adminErrorsRoutes());
 
   return app;
 }

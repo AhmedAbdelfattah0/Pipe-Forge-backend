@@ -48,6 +48,13 @@ export function validatorRoutes() {
 
     const result = validatorService.analyse(body.content, body.platform);
 
+    // Log the validation attempt for monthly cap enforcement.
+    await supabase.from('validator_logs').insert({
+      user_id: userId,
+      filename: body.filename ?? null,
+      platform: body.platform ?? null,
+    });
+
     return c.json(result);
   });
 
@@ -97,6 +104,13 @@ export function validatorRoutes() {
       ],
       'pipeline-fix',
     );
+
+    // Log the fix attempt for monthly cap enforcement.
+    await supabase.from('validator_logs').insert({
+      user_id: userId,
+      filename: body.filename ?? null,
+      platform: body.platform ?? null,
+    });
 
     return new Response(zipBuffer, {
       headers: {
