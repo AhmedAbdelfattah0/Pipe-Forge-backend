@@ -827,8 +827,8 @@ Always commit your package-lock.json to the repository.
       "demands": [],
       "conditions": [
         {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
+          "name": "ReleaseStarted",
+          "conditionType": 1,
           "value": ""
         }
       ],
@@ -1149,8 +1149,8 @@ Always commit your package-lock.json to the repository.
       "demands": [],
       "conditions": [
         {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
+          "name": "ReleaseStarted",
+          "conditionType": 1,
           "value": ""
         }
       ],
@@ -1387,8 +1387,8 @@ Always commit your package-lock.json to the repository.
       "demands": [],
       "conditions": [
         {
-          "name": "{{combination.artifactAlias}}",
-          "conditionType": 8,
+          "name": "ReleaseStarted",
+          "conditionType": 1,
           "value": ""
         }
       ],
