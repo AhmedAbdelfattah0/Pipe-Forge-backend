@@ -68,11 +68,13 @@ app.use('*', async (c, next) => {
 });
 
 app.use('*', async (c, next) => {
-  const origin = c.env.FRONTEND_URL || 'http://localhost:4200';
+  const productionOrigin = c.env.FRONTEND_URL || 'https://pipe-forge.pages.dev';
+  const allowed: readonly string[] = [productionOrigin, 'http://localhost:4200'];
   const corsMiddleware = cors({
-    origin,
+    origin: (origin: string) => (allowed.includes(origin) ? origin : null),
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
     maxAge: 86400,
   });
   return corsMiddleware(c, next);

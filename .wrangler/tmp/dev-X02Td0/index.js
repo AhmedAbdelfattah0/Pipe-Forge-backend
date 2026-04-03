@@ -40986,11 +40986,13 @@ app.use("*", async (c, next) => {
   await next();
 });
 app.use("*", async (c, next) => {
-  const origin = c.env.FRONTEND_URL || "http://localhost:4200";
+  const productionOrigin = c.env.FRONTEND_URL || "https://pipe-forge.pages.dev";
+  const allowed = [productionOrigin, "http://localhost:4200"];
   const corsMiddleware = cors({
-    origin,
+    origin: /* @__PURE__ */ __name((origin) => allowed.includes(origin) ? origin : null, "origin"),
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
     maxAge: 86400
   });
   return corsMiddleware(c, next);
