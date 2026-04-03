@@ -77,14 +77,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "npm ci",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "npm ci",
               "workingDirectory": "",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{#if config.qualityGates.enabled}}{{#if config.qualityGates.typescript.enabled}},
 
@@ -98,14 +101,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.typescript.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.typescript.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.lint.enabled}},
 
@@ -119,14 +125,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.lint.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.lint.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.tests.enabled}},
 
@@ -140,14 +149,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.tests.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.tests.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.format.enabled}},
 
@@ -161,14 +173,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.format.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.format.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{/if}}{{#if config.tokenReplacement.enabled}},
 
@@ -203,14 +218,17 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "npm run build -- --configuration=$(buildScript)",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "npm run build -- --configuration=$(buildScript)",
               "workingDirectory": "",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           },
 
@@ -249,7 +267,7 @@ export const TEMPLATE_SOURCES: Record<string, string> = {
           "type": 1,
           "demands": [],
           "agentSpecification": {
-            "identifier": "ubuntu-latest"
+            "identifier": "windows-latest"
           }
         },
         "jobAuthorizationScope": 1,
@@ -604,6 +622,7 @@ Always commit your package-lock.json to the repository.
 *This README was auto-generated by PipeForge. Do not edit manually — regenerate from the PipeForge wizard if changes are needed.*
 `,
   "release-appservice.json.hbs": `{
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -687,7 +706,7 @@ Always commit your package-lock.json to the repository.
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -829,7 +848,7 @@ Always commit your package-lock.json to the repository.
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {
@@ -867,6 +886,7 @@ Always commit your package-lock.json to the repository.
 }
 `,
   "release-storage.json.hbs": `{
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -950,7 +970,7 @@ Always commit your package-lock.json to the repository.
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -1150,7 +1170,7 @@ Always commit your package-lock.json to the repository.
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {
@@ -1188,6 +1208,7 @@ Always commit your package-lock.json to the repository.
 }
 `,
   "release-swa.json.hbs": `{
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -1271,7 +1292,7 @@ Always commit your package-lock.json to the repository.
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -1298,32 +1319,11 @@ Always commit your package-lock.json to the repository.
           "refName": "Job_1",
           "workflowTasks": [
 
-            {{! ── Task 1: Install SWA CLI ── }}
+            {{! ── Task 1: Install SWA CLI + deploy — ONE AzureCLI@2 task (verified GUID: 46e4be58-730b-4389-8a2f-ea10b3e5e815) ── }}
             {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "version": "2.*",
-              "name": "Install @azure/static-web-apps-cli",
-              "refName": "InstallSwaCli",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "script": "npm install -g @azure/static-web-apps-cli",
-                "workingDirectory": "",
-                "failOnStderr": "false"
-              }
-            },
-
-            {{! ── Task 2: Deploy to Static Web App ── }}
-            {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "version": "2.*",
-              "name": "SWA Deploy — {{combination.pipelineName}}",
+              "name": "Deploy to SWA",
               "refName": "SWA_Deploy",
               "enabled": true,
               "alwaysRun": false,
@@ -1334,17 +1334,23 @@ Always commit your package-lock.json to the repository.
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "script": "swa deploy . --deployment-token $(swaDeploymentToken) --env {{combination.environment}} --no-use-keychain",
-                "workingDirectory": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStderr": "false"
+                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "npm list -g @azure/static-web-apps-cli 2>/dev/null || npm install -g @azure/static-web-apps-cli\\n\\nswa deploy \\"$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}\\" \\\\\\n  --deployment-token $(SWA_TOKEN) \\\\\\n  --env production",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "failOnStandardError": "false",
+                "visibleAzLogin": "true",
+                "keepAzSessionActive": "false"
               }
             }{{#if config.triggerPipelineAfterDeploy}},
 
-            {{! ── Task 3 (conditional): Trigger downstream pipeline ── }}
+            {{! ── Task 2 (conditional): Trigger downstream pipeline — TriggerBuild@2 (verified GUID: 05485ce0-4948-481c-a89f-f21fa2fe9a74) ── }}
             {
-              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
-              "version": "0.*",
-              "name": "Trigger downstream pipeline",
+              "taskId": "05485ce0-4948-481c-a89f-f21fa2fe9a74",
+              "version": "2.*",
+              "name": "Trigger Azure DevOps Pipeline: Build",
               "refName": "TriggerDownstreamPipeline",
               "enabled": true,
               "alwaysRun": false,
@@ -1355,17 +1361,12 @@ Always commit your package-lock.json to the repository.
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "waitForCompletion": "false",
+                "connectedServiceName": "{{config.serviceConnectionId}}",
+                "project": "{{config.adoProjectName}}",
+                "Pipeline": "Build",
                 "buildDefinition": "{{config.triggerPipelineId}}",
-                "queueBuildForUserThatTriggeredBuild": "true",
-                "ignoreSslCertificateErrors": "false",
-                "useSameSourceVersion": "false",
-                "useCustomSourceVersion": "false",
-                "buildParameters": "",
-                "storeInEnvironment": "false",
-                "authenticationMethod": "OAuth Token",
-                "password": "$(System.AccessToken)",
-                "enableSecureParameters": "false"
+                "buildapiversion": "6.0",
+                "releaseapiversion": "6.0"
               }
             }{{/if}}
 
@@ -1407,7 +1408,7 @@ Always commit your package-lock.json to the repository.
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {

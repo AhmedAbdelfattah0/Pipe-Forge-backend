@@ -97,14 +97,17 @@
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.typescript.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.typescript.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.lint.enabled}},
 
@@ -118,14 +121,17 @@
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.lint.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.lint.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.tests.enabled}},
 
@@ -139,14 +145,17 @@
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.tests.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.tests.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{#if config.qualityGates.format.enabled}},
 
@@ -160,14 +169,17 @@
             "timeoutInMinutes": 0,
             "condition": "succeeded()",
             "task": {
-              "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "id": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "versionSpec": "2.*",
               "definitionType": "task"
             },
             "inputs": {
-              "script": "{{config.qualityGates.format.command}}",
+              "connectedServiceNameARM": "",
+              "scriptType": "bash",
+              "scriptLocation": "inlineScript",
+              "inlineScript": "{{config.qualityGates.format.command}}",
               "workingDirectory": "$(Build.SourcesDirectory)",
-              "failOnStderr": "false"
+              "failOnStandardError": "false"
             }
           }{{/if}}{{/if}}{{#if config.tokenReplacement.enabled}},
 
