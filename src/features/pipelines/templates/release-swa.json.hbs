@@ -1,4 +1,5 @@
 {
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -9,8 +10,8 @@
     "name": "{{config.adoProjectName}}"
   },
   "variables": {
-    "swaDeploymentToken": {
-      "value": "{{swaDeploymentToken}}",
+    "SWA_TOKEN": {
+      "value": "{{swaToken}}",
       "allowOverride": false,
       "isSecret": true
     },
@@ -82,7 +83,7 @@
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -109,32 +110,11 @@
           "refName": "Job_1",
           "workflowTasks": [
 
-            {{! ── Task 1: Install SWA CLI ── }}
+            {{! ── Task 1: Install SWA CLI + deploy — ONE AzureCLI@2 task (verified GUID: 46e4be58-730b-4389-8a2f-ea10b3e5e815) ── }}
             {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
               "version": "2.*",
-              "name": "Install @azure/static-web-apps-cli",
-              "refName": "InstallSwaCli",
-              "enabled": true,
-              "alwaysRun": false,
-              "continueOnError": false,
-              "timeoutInMinutes": 0,
-              "retryCountOnTaskFailure": 0,
-              "definitionType": "task",
-              "overrideInputs": {},
-              "condition": "succeeded()",
-              "inputs": {
-                "script": "npm install -g @azure/static-web-apps-cli",
-                "workingDirectory": "",
-                "failOnStderr": "false"
-              }
-            },
-
-            {{! ── Task 2: Deploy to Static Web App ── }}
-            {
-              "taskId": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
-              "version": "2.*",
-              "name": "SWA Deploy — {{combination.pipelineName}}",
+              "name": "Deploy to SWA",
               "refName": "SWA_Deploy",
               "enabled": true,
               "alwaysRun": false,
@@ -145,17 +125,23 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "script": "swa deploy . --deployment-token $(swaDeploymentToken) --env {{combination.environment}} --no-use-keychain",
-                "workingDirectory": "$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}",
-                "failOnStderr": "false"
+                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "scriptType": "bash",
+                "scriptLocation": "inlineScript",
+                "inlineScript": "npm list -g @azure/static-web-apps-cli 2>/dev/null || npm install -g @azure/static-web-apps-cli\n\nswa deploy \"$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}\" \\\n  --deployment-token $(SWA_TOKEN) \\\n  --env production",
+                "addSpnToEnvironment": "false",
+                "useGlobalConfig": "false",
+                "failOnStandardError": "false",
+                "visibleAzLogin": "true",
+                "keepAzSessionActive": "false"
               }
             }{{#if config.triggerPipelineAfterDeploy}},
 
-            {{! ── Task 3 (conditional): Trigger downstream pipeline ── }}
+            {{! ── Task 2 (conditional): Trigger downstream pipeline — TriggerBuild@2 (verified GUID: 05485ce0-4948-481c-a89f-f21fa2fe9a74) ── }}
             {
-              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
-              "version": "0.*",
-              "name": "Trigger downstream pipeline",
+              "taskId": "05485ce0-4948-481c-a89f-f21fa2fe9a74",
+              "version": "2.*",
+              "name": "Trigger Azure DevOps Pipeline: Build",
               "refName": "TriggerDownstreamPipeline",
               "enabled": true,
               "alwaysRun": false,
@@ -166,17 +152,12 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "waitForCompletion": "false",
+                "connectedServiceName": "{{config.serviceConnectionId}}",
+                "project": "{{config.adoProjectName}}",
+                "Pipeline": "Build",
                 "buildDefinition": "{{config.triggerPipelineId}}",
-                "queueBuildForUserThatTriggeredBuild": "true",
-                "ignoreSslCertificateErrors": "false",
-                "useSameSourceVersion": "false",
-                "useCustomSourceVersion": "false",
-                "buildParameters": "",
-                "storeInEnvironment": "false",
-                "authenticationMethod": "OAuth Token",
-                "password": "$(System.AccessToken)",
-                "enableSecureParameters": "false"
+                "buildapiversion": "6.0",
+                "releaseapiversion": "6.0"
               }
             }{{/if}}
 
@@ -218,7 +199,7 @@
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {

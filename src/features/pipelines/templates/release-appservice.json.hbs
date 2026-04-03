@@ -1,4 +1,5 @@
 {
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -82,7 +83,7 @@
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -109,7 +110,7 @@
           "refName": "Job_1",
           "workflowTasks": [
 
-            {{! ── Task 1: AzureRmWebAppDeployment@4 ── }}
+            {{! ── Task 1: AzureRmWebAppDeployment@4 (verified GUID: 497d490f-eea7-4f2b-ab94-48d9c1acdcb1) ── }}
             {
               "taskId": "497d490f-eea7-4f2b-ab94-48d9c1acdcb1",
               "version": "4.*",
@@ -157,11 +158,11 @@
               }
             }{{#if config.triggerPipelineAfterDeploy}},
 
-            {{! ── Task 2 (conditional): Trigger downstream pipeline ── }}
+            {{! ── Task 2 (conditional): Trigger downstream pipeline — TriggerBuild@2 (verified GUID: 05485ce0-4948-481c-a89f-f21fa2fe9a74) ── }}
             {
-              "taskId": "9c3e8943-130d-4c78-ac63-8af81df62dfb",
-              "version": "0.*",
-              "name": "Trigger downstream pipeline",
+              "taskId": "05485ce0-4948-481c-a89f-f21fa2fe9a74",
+              "version": "2.*",
+              "name": "Trigger Azure DevOps Pipeline: Build",
               "refName": "TriggerDownstreamPipeline",
               "enabled": true,
               "alwaysRun": false,
@@ -172,17 +173,12 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "waitForCompletion": "false",
+                "connectedServiceName": "{{config.serviceConnectionId}}",
+                "project": "{{config.adoProjectName}}",
+                "Pipeline": "Build",
                 "buildDefinition": "{{config.triggerPipelineId}}",
-                "queueBuildForUserThatTriggeredBuild": "true",
-                "ignoreSslCertificateErrors": "false",
-                "useSameSourceVersion": "false",
-                "useCustomSourceVersion": "false",
-                "buildParameters": "",
-                "storeInEnvironment": "false",
-                "authenticationMethod": "OAuth Token",
-                "password": "$(System.AccessToken)",
-                "enableSecureParameters": "false"
+                "buildapiversion": "6.0",
+                "releaseapiversion": "6.0"
               }
             }{{/if}}
 
@@ -224,7 +220,7 @@
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {

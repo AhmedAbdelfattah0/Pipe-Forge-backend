@@ -111,6 +111,17 @@ All variables are validated by Zod at startup (`src/config/env.ts`).
 - **Docker**: Multi-stage build — builder compiles TS; runner copies `dist/`, `node_modules`, `package.json`, and `.hbs` templates
 - **CI**: GitHub Actions at `../.github/workflows/backend-ci.yml` (triggers on `PipeForge-backend/**` path changes)
 
+## ADO Task GUIDs — CRITICAL
+
+Before modifying ANY pipeline template file (.hbs):
+1. Read ADO_TASK_GUIDS.md in the repo root
+2. Only use GUIDs listed in that file
+3. NEVER invent or guess GUIDs
+4. If a task is not listed → stop and ask before proceeding
+
+Wrong GUIDs cause "This task is no longer installed" errors in ADO.
+Wrong GUIDs cause pipeline import failures in ADO.
+
 ## Key References
 - PRD: ../PipeForge-Frontend/PRD.md
 - Backend plan: ../.claude/plans/backend-plan.md

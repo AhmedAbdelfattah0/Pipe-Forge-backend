@@ -1,4 +1,5 @@
 {
+  "source": 2,
   "id": -1,
   "name": "RELEASE-{{combination.pipelineName}}",
   "type": 1,
@@ -82,7 +83,7 @@
               "parallelExecutionType": 0
             },
             "agentSpecification": {
-              "identifier": "ubuntu-latest"
+              "identifier": "windows-latest"
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
@@ -109,10 +110,10 @@
           "refName": "Job_1",
           "workflowTasks": [
 
-            {{! ── Task 1: Delete existing blobs (primary path) ── }}
+            {{! ── Task 1: Delete existing blobs (primary path) — AzureCLI@2 (verified GUID: 46e4be58-730b-4389-8a2f-ea10b3e5e815) ── }}
             {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
+              "version": "2.*",
               "name": "Azure CLI — delete blobs at primary path",
               "refName": "AzureCLI_Delete_Primary",
               "enabled": true,
@@ -136,10 +137,10 @@
               }
             },
 
-            {{! ── Task 2: Upload blobs to primary deployment path ── }}
+            {{! ── Task 2: Upload blobs to primary deployment path — AzureCLI@2 ── }}
             {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
+              "version": "2.*",
               "name": "Azure CLI — upload blobs to primary path",
               "refName": "AzureCLI_Upload_Primary",
               "enabled": true,
@@ -163,10 +164,10 @@
               }
             },
 
-            {{! ── Task 3: Delete existing blobs (versioned path) ── }}
+            {{! ── Task 3: Delete existing blobs (versioned path) — AzureCLI@2 ── }}
             {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
+              "version": "2.*",
               "name": "Azure CLI — delete blobs at versioned path",
               "refName": "AzureCLI_Delete_Versioned",
               "enabled": true,
@@ -190,10 +191,10 @@
               }
             },
 
-            {{! ── Task 4: Upload blobs to versioned path ── }}
+            {{! ── Task 4: Upload blobs to versioned path — AzureCLI@2 ── }}
             {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
+              "version": "2.*",
               "name": "Azure CLI — upload blobs to versioned path",
               "refName": "AzureCLI_Upload_Versioned",
               "enabled": true,
@@ -217,10 +218,10 @@
               }
             }{{#if preserveFiles}},
 
-            {{! ── Task 5: Preserve files — copy from source container to destination ── }}
+            {{! ── Task 5 (conditional): Preserve files — copy from source container to destination — AzureCLI@2 ── }}
             {
-              "taskId": "46e4be58-730b-88da-2d50-57f4867f51b1",
-              "version": "0.*",
+              "taskId": "46e4be58-730b-4389-8a2f-ea10b3e5e815",
+              "version": "2.*",
               "name": "Azure CLI — preserve files",
               "refName": "AzureCLI_Preserve_Files",
               "enabled": true,
@@ -282,7 +283,7 @@
   ],
   "artifacts": [
     {
-      "sourceId": "{{config.adoProjectName}}:{{combination.pipelineName}}",
+      "sourceId": "",
       "type": "Build",
       "alias": "{{combination.artifactAlias}}",
       "definitionReference": {
