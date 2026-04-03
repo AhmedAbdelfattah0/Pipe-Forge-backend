@@ -38873,6 +38873,13 @@ var HistoryRepository = class {
     }
     return data;
   }
+  async updateById(id, userId, updates) {
+    const { data, error: error3 } = await this.supabase.from("projects").update(updates).eq("id", id).eq("user_id", userId).select().single();
+    if (error3 || !data) {
+      throw new AppError(`Failed to update project: ${error3?.message ?? "unknown error"}`, 500);
+    }
+    return data;
+  }
   async deleteById(id, userId) {
     const { error: error3, count: count3 } = await this.supabase.from("projects").delete({ count: "exact" }).eq("id", id).eq("user_id", userId);
     if (error3) {
@@ -39289,6 +39296,7 @@ init_virtual_unenv_global_polyfill_cloudflare_unenv_preset_node_console();
 init_performance2();
 init_pipeline_zip_service();
 var generatorService2 = new PipelineGeneratorService();
+var githubActionsGeneratorService2 = new GitHubActionsGeneratorService();
 var zipService2 = new PipelineZipService();
 function historyRoutes() {
   const app2 = new Hono2();
@@ -39324,6 +39332,73 @@ function historyRoutes() {
       config_snapshot: decryptConfigSnapshot(project.config_snapshot, c.env.ENCRYPTION_KEY)
     };
     return c.json({ project: decryptedProject });
+  });
+  app2.put("/:id", async (c) => {
+    const userId = c.get("userId");
+    const id = c.req.param("id");
+    const supabase = createSupabaseAdmin(c.env);
+    const historyRepository = new HistoryRepository(supabase);
+    const runRepository = new PipelineRunRepository(supabase);
+    const subscriptionRepository = new SubscriptionRepository(supabase);
+    const existing = await historyRepository.findById(id);
+    if (!existing) {
+      throw new AppError("Project not found", 404);
+    }
+    if (existing.user_id !== userId) {
+      throw new AppError("Project not found", 404);
+    }
+    const body = await c.req.json();
+    const parseResult = GeneratorConfigSchema.safeParse(body);
+    if (!parseResult.success) {
+      return c.json(
+        { status: "error", message: "Invalid generator configuration", issues: parseResult.error.issues },
+        400
+      );
+    }
+    const config2 = parseResult.data;
+    const projectName = config2.projectName || "my-app";
+    const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const enabledMarkets = config2.markets.filter((m) => m.enabled).map((m) => m.code);
+    const languages = config2.isMultiLanguage ? config2.languages.map((l) => l.code) : [];
+    const reEncryptedSnapshot = encryptConfigSnapshot(
+      config2,
+      c.env.ENCRYPTION_KEY
+    );
+    const run = await runRepository.create({
+      user_id: userId,
+      project_id: id,
+      status: "pending"
+    });
+    try {
+      await runRepository.updateStatus(run.id, "generating");
+      const isGHA = config2.platform === "github-actions";
+      const renderedFiles = isGHA ? githubActionsGeneratorService2.generate(config2) : generatorService2.generate(config2);
+      const zipBuffer = await zipService2.createZip(renderedFiles, projectName);
+      const fileCount = renderedFiles.length;
+      await historyRepository.updateById(id, userId, {
+        mfe_name: config2.projectName,
+        repository_name: config2.repositoryName,
+        deploy_target: config2.deployTarget ?? "storage-account",
+        markets: enabledMarkets,
+        environments: config2.environments,
+        languages,
+        output_formats: config2.outputFormats,
+        pipeline_count: fileCount,
+        config_snapshot: reEncryptedSnapshot
+      });
+      await runRepository.updateStatus(run.id, "success", fileCount);
+      await subscriptionRepository.incrementUsage(userId);
+      return new Response(zipBuffer, {
+        headers: {
+          "Content-Type": "application/zip",
+          "Content-Disposition": `attachment; filename="${safeFilename}-pipelines.zip"`
+        }
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown generation error";
+      await runRepository.updateStatus(run.id, "error", void 0, message);
+      throw err;
+    }
   });
   app2.delete("/:id", async (c) => {
     const userId = c.get("userId");

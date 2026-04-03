@@ -9,6 +9,7 @@
  * Routes:
  *   GET    /api/history            — paginated + searchable project list
  *   GET    /api/history/:id        — single project with config_snapshot
+ *   PUT    /api/history/:id        — update config + re-generate pipelines (edit mode)
  *   DELETE /api/history/:id        — delete a project (ownership enforced)
  *   POST   /api/history/:id/regenerate — re-generate from stored config snapshot
  */
@@ -18,6 +19,7 @@ import { AppError } from '../../../shared/utils/app-error.js';
 import { createSupabaseAdmin } from '../../../config/supabase.js';
 import { HistoryRepository } from '../repositories/history.repository.js';
 import { PipelineGeneratorService } from '../../pipelines/services/pipeline-generator.service.js';
+import { GitHubActionsGeneratorService } from '../../pipelines/services/github-actions-generator.service.js';
 import { PipelineZipService } from '../../pipelines/services/pipeline-zip.service.js';
 import { PipelineRunRepository } from '../../pipelines/repositories/pipeline-run.repository.js';
 import { SubscriptionRepository } from '../../billing/repositories/subscription.repository.js';
@@ -30,6 +32,7 @@ import type { HonoEnv } from '../../../shared/middleware/auth.js';
 
 // Services are stateless — safe to instantiate once.
 const generatorService = new PipelineGeneratorService();
+const githubActionsGeneratorService = new GitHubActionsGeneratorService();
 const zipService = new PipelineZipService();
 
 export function historyRoutes() {
@@ -82,6 +85,97 @@ export function historyRoutes() {
     };
 
     return c.json({ project: decryptedProject });
+  });
+
+  // ─── PUT /:id ─────────────────────────────────────────────────────────────
+  //
+  // Updates an existing project's config_snapshot (and derived metadata) and
+  // re-generates + re-downloads the pipeline ZIP.  This is the "edit + save"
+  // path: no new project row is created; the existing record is mutated in place.
+
+  app.put('/:id', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    const supabase = createSupabaseAdmin(c.env);
+    const historyRepository = new HistoryRepository(supabase);
+    const runRepository = new PipelineRunRepository(supabase);
+    const subscriptionRepository = new SubscriptionRepository(supabase);
+
+    // Ownership check.
+    const existing = await historyRepository.findById(id);
+    if (!existing) {
+      throw new AppError('Project not found', 404);
+    }
+    if (existing.user_id !== userId) {
+      throw new AppError('Project not found', 404);
+    }
+
+    // Parse + validate the new config from the request body.
+    const body = await c.req.json();
+    const parseResult = GeneratorConfigSchema.safeParse(body);
+    if (!parseResult.success) {
+      return c.json(
+        { status: 'error', message: 'Invalid generator configuration', issues: parseResult.error.issues },
+        400,
+      );
+    }
+    const config = parseResult.data;
+    const projectName = config.projectName || 'my-app';
+    const safeFilename = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    const enabledMarkets = config.markets.filter((m) => m.enabled).map((m) => m.code);
+    const languages = config.isMultiLanguage ? config.languages.map((l) => l.code) : [];
+
+    const reEncryptedSnapshot = encryptConfigSnapshot(
+      config as unknown as Record<string, unknown>,
+      c.env.ENCRYPTION_KEY,
+    );
+
+    // Create a tracking run for this edit-regeneration.
+    const run = await runRepository.create({
+      user_id: userId,
+      project_id: id,
+      status: 'pending',
+    });
+
+    try {
+      await runRepository.updateStatus(run.id, 'generating');
+
+      const isGHA = config.platform === 'github-actions';
+      const renderedFiles = isGHA
+        ? githubActionsGeneratorService.generate(config)
+        : generatorService.generate(config);
+
+      const zipBuffer = await zipService.createZip(renderedFiles, projectName);
+      const fileCount = renderedFiles.length;
+
+      // Update the existing project record — no new row.
+      await historyRepository.updateById(id, userId, {
+        mfe_name: config.projectName,
+        repository_name: config.repositoryName,
+        deploy_target: config.deployTarget ?? 'storage-account',
+        markets: enabledMarkets,
+        environments: config.environments,
+        languages,
+        output_formats: config.outputFormats,
+        pipeline_count: fileCount,
+        config_snapshot: reEncryptedSnapshot,
+      });
+
+      await runRepository.updateStatus(run.id, 'success', fileCount);
+      await subscriptionRepository.incrementUsage(userId);
+
+      return new Response(zipBuffer, {
+        headers: {
+          'Content-Type': 'application/zip',
+          'Content-Disposition': `attachment; filename="${safeFilename}-pipelines.zip"`,
+        },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown generation error';
+      await runRepository.updateStatus(run.id, 'error', undefined, message);
+      throw err;
+    }
   });
 
   // ─── DELETE /:id ──────────────────────────────────────────────────────────

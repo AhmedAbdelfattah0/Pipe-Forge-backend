@@ -83,6 +83,26 @@ export class HistoryRepository {
     return data as Project;
   }
 
+  async updateById(
+    id: string,
+    userId: string,
+    updates: Partial<Omit<InsertProject, 'user_id'>>,
+  ): Promise<Project> {
+    const { data, error } = await this.supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new AppError(`Failed to update project: ${error?.message ?? 'unknown error'}`, 500);
+    }
+
+    return data as Project;
+  }
+
   async deleteById(id: string, userId: string): Promise<void> {
     const { error, count } = await this.supabase
       .from('projects')
