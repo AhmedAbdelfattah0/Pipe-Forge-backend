@@ -25,6 +25,8 @@ import { Hono } from 'hono';
 import type { NotionWebhookPayload } from '../models/notion.model.js';
 import { syncNotionPageToDrive } from '../services/notion-sync.service.js';
 import { uploadToDrive, createRootFolder, shareFolderWithUser } from '../services/google-drive.js';
+import { fetchNotionPage, fetchNotionBlocks } from '../services/notion-api.js';
+import { notionToMarkdown } from '../services/notion-to-markdown.js';
 import type { WebhookEnv } from '../../../config/env.js';
 
 type HonoEnv = { Bindings: WebhookEnv };
@@ -131,6 +133,89 @@ export function webhookRoutes(): Hono<HonoEnv> {
       console.error('[test-drive] Upload failed:', error);
       return c.json({ success: false, error }, 500);
     }
+  });
+
+  /**
+   * GET /webhooks/notion/sync-all
+   *
+   * Bulk sync all 6 PipeForge HQ Notion pages to Google Drive.
+   *
+   * For each page the handler:
+   *   1. Fetches the page and its blocks from the Notion API
+   *   2. Converts the blocks to Markdown
+   *   3. Uploads the Markdown file to Google Drive under the predetermined filename
+   *
+   * On partial failure the handler continues processing remaining pages and
+   * returns an `errors` array alongside the `synced` array.
+   *
+   * Returns: { synced: string[], total: number, errors?: { filename, error }[] }
+   */
+  app.get('/notion/sync-all', async (c) => {
+    const env = c.env;
+
+    const { NOTION_API_KEY, GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_DRIVE_FOLDER_ID } = env;
+
+    if (!NOTION_API_KEY || !GOOGLE_SERVICE_ACCOUNT_JSON || !GOOGLE_DRIVE_FOLDER_ID) {
+      return c.json(
+        { success: false, error: 'Missing NOTION_API_KEY, GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_DRIVE_FOLDER_ID' },
+        500,
+      );
+    }
+
+    const HQ_PAGES: ReadonlyArray<{ readonly id: string; readonly filename: string }> = [
+      { id: '33613d1e5c958192b1f4fc53bf3562e7', filename: 'hq-root.md' },
+      { id: '33613d1e5c958104b72fdc7e9a3e9de0', filename: 'strategy-and-vision.md' },
+      { id: '33613d1e5c95817184afc660265281d5', filename: 'business-and-pricing.md' },
+      { id: '33613d1e5c9581939fe4f84516d7efb4', filename: 'brand-and-marketing.md' },
+      { id: '33613d1e5c9581d09a59ec6bbd45d356', filename: 'metrics-and-roadmap.md' },
+      { id: '33613d1e5c9581668969e6bcba77ddce', filename: 'development.md' },
+    ];
+
+    const synced: string[] = [];
+    const errors: Array<{ filename: string; error: string }> = [];
+
+    for (const page of HQ_PAGES) {
+      try {
+        console.log(`[sync-all] Fetching page ${page.id} (${page.filename})`);
+
+        const [notionPage, blocks] = await Promise.all([
+          fetchNotionPage(page.id, NOTION_API_KEY),
+          fetchNotionBlocks(page.id, NOTION_API_KEY),
+        ]);
+
+        const { markdown } = notionToMarkdown(notionPage, blocks);
+        console.log(`[sync-all] Converted ${page.filename} (${markdown.length} chars)`);
+
+        await uploadToDrive(
+          page.filename,
+          markdown,
+          GOOGLE_SERVICE_ACCOUNT_JSON,
+          GOOGLE_DRIVE_FOLDER_ID,
+        );
+
+        console.log(`[sync-all] Uploaded ${page.filename}`);
+        synced.push(page.filename);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`[sync-all] Failed to sync ${page.filename}:`, message);
+        errors.push({ filename: page.filename, error: message });
+      }
+    }
+
+    const response: {
+      synced: string[];
+      total: number;
+      errors?: Array<{ filename: string; error: string }>;
+    } = {
+      synced,
+      total: synced.length,
+    };
+
+    if (errors.length > 0) {
+      response.errors = errors;
+    }
+
+    return c.json(response, 200);
   });
 
   /**
