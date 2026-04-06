@@ -120,7 +120,7 @@ export function webhookRoutes(): Hono<HonoEnv> {
 
     try {
       const content = `# Test\nDrive connection works at ${new Date().toISOString()}`;
-      await uploadToDrive('test-connection.md', content, env);
+      await uploadToDrive('test-connection', content, env);
       console.log('[test-drive] Upload succeeded');
       return c.json({ success: true }, 200);
     } catch (err: unknown) {
@@ -158,12 +158,12 @@ export function webhookRoutes(): Hono<HonoEnv> {
     }
 
     const HQ_PAGES: ReadonlyArray<{ readonly id: string; readonly filename: string }> = [
-      { id: '33613d1e5c958192b1f4fc53bf3562e7', filename: 'hq-root.md' },
-      { id: '33613d1e5c958104b72fdc7e9a3e9de0', filename: 'strategy-and-vision.md' },
-      { id: '33613d1e5c95817184afc660265281d5', filename: 'business-and-pricing.md' },
-      { id: '33613d1e5c9581939fe4f84516d7efb4', filename: 'brand-and-marketing.md' },
-      { id: '33613d1e5c9581d09a59ec6bbd45d356', filename: 'metrics-and-roadmap.md' },
-      { id: '33613d1e5c9581668969e6bcba77ddce', filename: 'development.md' },
+      { id: '33613d1e5c958192b1f4fc53bf3562e7', filename: 'hq-root' },
+      { id: '33613d1e5c958104b72fdc7e9a3e9de0', filename: 'strategy-and-vision' },
+      { id: '33613d1e5c95817184afc660265281d5', filename: 'business-and-pricing' },
+      { id: '33613d1e5c9581939fe4f84516d7efb4', filename: 'brand-and-marketing' },
+      { id: '33613d1e5c9581d09a59ec6bbd45d356', filename: 'metrics-and-roadmap' },
+      { id: '33613d1e5c9581668969e6bcba77ddce', filename: 'development' },
     ];
 
     const synced: string[] = [];

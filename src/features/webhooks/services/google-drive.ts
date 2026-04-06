@@ -255,7 +255,7 @@ async function createFile(
 ): Promise<void> {
   const metadata = {
     name: filename,
-    mimeType: 'text/markdown',
+    mimeType: 'application/vnd.google-apps.document',
     parents: [folderId],
   };
 
@@ -266,7 +266,7 @@ async function createFile(
     '',
     JSON.stringify(metadata),
     `--${boundary}`,
-    'Content-Type: text/markdown',
+    'Content-Type: text/plain',
     '',
     content,
     `--${boundary}--`,
@@ -298,15 +298,28 @@ async function updateFile(
   fileId: string,
   content: string,
 ): Promise<void> {
+  const boundary = '-------314159265358979323846';
+  const body = [
+    `--${boundary}`,
+    'Content-Type: application/json; charset=UTF-8',
+    '',
+    JSON.stringify({ mimeType: 'application/vnd.google-apps.document' }),
+    `--${boundary}`,
+    'Content-Type: text/plain',
+    '',
+    content,
+    `--${boundary}--`,
+  ].join('\r\n');
+
   const response = await fetch(
-    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`,
+    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&supportsAllDrives=true`,
     {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'text/markdown',
+        'Content-Type': `multipart/related; boundary="${boundary}"`,
       },
-      body: content,
+      body,
     },
   );
 
