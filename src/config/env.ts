@@ -32,4 +32,18 @@ export interface WebhookEnv extends Env {
    * Optional — sharing is skipped if this binding is absent.
    */
   GOOGLE_OWNER_EMAIL?: string;
+  /**
+   * Google OAuth2 client ID for the personal Drive OAuth2 flow.
+   * When present (alongside GOOGLE_CLIENT_SECRET + GOOGLE_REFRESH_TOKEN),
+   * uploads use OAuth2 refresh-token auth instead of a service account,
+   * which means files are stored in Ahmed's personal Drive quota.
+   */
+  GOOGLE_CLIENT_ID?: string;
+  /** Google OAuth2 client secret. Pair with GOOGLE_CLIENT_ID. */
+  GOOGLE_CLIENT_SECRET?: string;
+  /**
+   * Long-lived OAuth2 refresh token obtained from the auth-callback endpoint.
+   * Generate once via GET /webhooks/google-drive/auth-start → auth-callback.
+   */
+  GOOGLE_REFRESH_TOKEN?: string;
 }

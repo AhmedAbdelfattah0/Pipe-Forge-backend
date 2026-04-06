@@ -111,21 +111,16 @@ export function webhookRoutes(): Hono<HonoEnv> {
     console.log('[test-drive] FOLDER_ID exists:', !!env.GOOGLE_DRIVE_FOLDER_ID);
     console.log('[test-drive] FOLDER_ID value:', env.GOOGLE_DRIVE_FOLDER_ID);
 
-    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_DRIVE_FOLDER_ID) {
+    if (!env.GOOGLE_DRIVE_FOLDER_ID) {
       return c.json(
-        { success: false, error: 'Missing GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_DRIVE_FOLDER_ID' },
+        { success: false, error: 'Missing GOOGLE_DRIVE_FOLDER_ID' },
         500,
       );
     }
 
     try {
       const content = `# Test\nDrive connection works at ${new Date().toISOString()}`;
-      await uploadToDrive(
-        'test-connection.md',
-        content,
-        env.GOOGLE_SERVICE_ACCOUNT_JSON,
-        env.GOOGLE_DRIVE_FOLDER_ID,
-      );
+      await uploadToDrive('test-connection.md', content, env);
       console.log('[test-drive] Upload succeeded');
       return c.json({ success: true }, 200);
     } catch (err: unknown) {
@@ -153,11 +148,11 @@ export function webhookRoutes(): Hono<HonoEnv> {
   app.get('/notion/sync-all', async (c) => {
     const env = c.env;
 
-    const { NOTION_API_KEY, GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_DRIVE_FOLDER_ID } = env;
+    const { NOTION_API_KEY, GOOGLE_DRIVE_FOLDER_ID } = env;
 
-    if (!NOTION_API_KEY || !GOOGLE_SERVICE_ACCOUNT_JSON || !GOOGLE_DRIVE_FOLDER_ID) {
+    if (!NOTION_API_KEY || !GOOGLE_DRIVE_FOLDER_ID) {
       return c.json(
-        { success: false, error: 'Missing NOTION_API_KEY, GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_DRIVE_FOLDER_ID' },
+        { success: false, error: 'Missing NOTION_API_KEY or GOOGLE_DRIVE_FOLDER_ID' },
         500,
       );
     }
@@ -186,12 +181,7 @@ export function webhookRoutes(): Hono<HonoEnv> {
         const { markdown } = notionToMarkdown(notionPage, blocks);
         console.log(`[sync-all] Converted ${page.filename} (${markdown.length} chars)`);
 
-        await uploadToDrive(
-          page.filename,
-          markdown,
-          GOOGLE_SERVICE_ACCOUNT_JSON,
-          GOOGLE_DRIVE_FOLDER_ID,
-        );
+        await uploadToDrive(page.filename, markdown, env);
 
         console.log(`[sync-all] Uploaded ${page.filename}`);
         synced.push(page.filename);
@@ -381,6 +371,138 @@ export function webhookRoutes(): Hono<HonoEnv> {
   });
 
   /**
+   * GET /webhooks/google-drive/auth-start
+   *
+   * Builds a Google OAuth2 authorisation URL and returns it as JSON.
+   * Open the returned URL in a browser, sign in as Ahmed, and grant access.
+   * Google will redirect to /webhooks/google-drive/auth-callback with a `code`
+   * query param that the callback handler exchanges for a refresh token.
+   *
+   * Required env bindings:
+   *   GOOGLE_CLIENT_ID — OAuth2 client ID from Google Cloud Console
+   *
+   * Returns: { authUrl: string }
+   */
+  app.get('/google-drive/auth-start', (c) => {
+    const env = c.env;
+
+    if (!env.GOOGLE_CLIENT_ID) {
+      return c.json({ success: false, error: 'Missing GOOGLE_CLIENT_ID' }, 500);
+    }
+
+    const redirectUri =
+      'https://pipeforge-backend.ahmed-m-abdelfttah.workers.dev/webhooks/google-drive/auth-callback';
+
+    const params = new URLSearchParams({
+      client_id: env.GOOGLE_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      access_type: 'offline',
+      prompt: 'consent', // forces Google to return a refresh_token every time
+    });
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+    return c.json({ authUrl });
+  });
+
+  /**
+   * GET /webhooks/google-drive/auth-callback?code=xxx
+   *
+   * Exchanges the one-time authorisation code (returned by Google after the
+   * user grants permission in auth-start) for an access token + refresh token.
+   *
+   * On success returns the refresh token and instructions for storing it as a
+   * Cloudflare Worker secret so subsequent uploads use OAuth2 auth.
+   *
+   * Required env bindings:
+   *   GOOGLE_CLIENT_ID
+   *   GOOGLE_CLIENT_SECRET
+   *
+   * Query params:
+   *   code — authorisation code from Google redirect
+   *
+   * Returns: { refresh_token, access_token, message }
+   */
+  app.get('/google-drive/auth-callback', async (c) => {
+    const env = c.env;
+
+    const code = c.req.query('code');
+    if (!code) {
+      return c.json({ success: false, error: 'Missing `code` query parameter' }, 400);
+    }
+
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+      return c.json(
+        { success: false, error: 'Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET' },
+        500,
+      );
+    }
+
+    const redirectUri =
+      'https://pipeforge-backend.ahmed-m-abdelfttah.workers.dev/webhooks/google-drive/auth-callback';
+
+    interface TokenExchangeResponse {
+      access_token?: string;
+      refresh_token?: string;
+      error?: string;
+      error_description?: string;
+    }
+
+    try {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: env.GOOGLE_CLIENT_ID,
+          client_secret: env.GOOGLE_CLIENT_SECRET,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      const data = (await response.json()) as TokenExchangeResponse;
+
+      if (data.error) {
+        return c.json(
+          {
+            success: false,
+            error: data.error,
+            error_description: data.error_description ?? null,
+          },
+          400,
+        );
+      }
+
+      if (!data.refresh_token) {
+        return c.json(
+          {
+            success: false,
+            error:
+              'No refresh_token in response. This usually means the OAuth2 consent screen was not shown. ' +
+              'Visit /webhooks/google-drive/auth-start again — it uses prompt=consent to force a new refresh token.',
+          },
+          400,
+        );
+      }
+
+      return c.json({
+        success: true,
+        refresh_token: data.refresh_token,
+        access_token: data.access_token ?? null,
+        message:
+          'Copy the refresh_token above, then run: npx wrangler secret put GOOGLE_REFRESH_TOKEN and paste it when prompted.',
+      });
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('[auth-callback] Token exchange failed:', error);
+      return c.json({ success: false, error }, 500);
+    }
+  });
+
+  /**
    * POST /webhooks/notion
    *
    * 1. Handle Notion verification handshake (no signature present)
@@ -477,10 +599,10 @@ export function webhookRoutes(): Hono<HonoEnv> {
     }
 
     // ── 5. Validate required env vars ─────────────────────────────────────
-    const { NOTION_API_KEY, GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_DRIVE_FOLDER_ID } = env;
+    const { NOTION_API_KEY } = env;
 
-    if (!NOTION_API_KEY || !GOOGLE_SERVICE_ACCOUNT_JSON || !GOOGLE_DRIVE_FOLDER_ID) {
-      console.error('[webhook] Missing one or more required env vars for sync');
+    if (!NOTION_API_KEY) {
+      console.error('[webhook] Missing NOTION_API_KEY');
       return c.json({ status: 'error', message: 'Server misconfiguration' }, 500);
     }
 
@@ -495,8 +617,7 @@ export function webhookRoutes(): Hono<HonoEnv> {
           console.log('4. Fetching Notion page...');
           await syncNotionPageToDrive(pageId, {
             notionApiKey: NOTION_API_KEY,
-            googleServiceAccountJson: GOOGLE_SERVICE_ACCOUNT_JSON,
-            googleDriveFolderId: GOOGLE_DRIVE_FOLDER_ID,
+            env,
           });
           console.log('8. Upload complete!');
         } catch (err: unknown) {

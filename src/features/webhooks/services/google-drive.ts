@@ -1,15 +1,30 @@
 /**
  * google-drive.ts
  *
- * Google Drive upload service using Service Account JWT authentication.
+ * Google Drive upload service.
+ *
+ * Authentication priority:
+ *   1. OAuth2 refresh-token flow  — if GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET +
+ *      GOOGLE_REFRESH_TOKEN are all present in env. Files are uploaded as the
+ *      authenticated user (Ahmed's personal Drive), so personal storage quota
+ *      applies and the 403 "Service Accounts do not have storage quota" error
+ *      is avoided.
+ *   2. Service Account JWT flow   — fallback when OAuth2 vars are absent.
  *
  * All HTTP calls use the global `fetch` API (Cloudflare Workers compatible).
  * No googleapis SDK or jsonwebtoken — JWT is constructed manually using Web Crypto.
  *
  * Required env vars (injected via Hono `c.env`):
- *   GOOGLE_SERVICE_ACCOUNT_JSON — full service account JSON key as a string
+ *   GOOGLE_SERVICE_ACCOUNT_JSON — full service account JSON key as a string (fallback)
  *   GOOGLE_DRIVE_FOLDER_ID      — target Drive folder ID
+ *
+ * Optional OAuth2 env vars (preferred when all three are present):
+ *   GOOGLE_CLIENT_ID
+ *   GOOGLE_CLIENT_SECRET
+ *   GOOGLE_REFRESH_TOKEN
  */
+
+import type { WebhookEnv } from '../../../config/env.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -22,6 +37,12 @@ interface GoogleTokenResponse {
   readonly access_token: string;
   readonly token_type: string;
   readonly expires_in: number;
+}
+
+interface OAuth2TokenResponse {
+  readonly access_token?: string;
+  readonly error?: string;
+  readonly error_description?: string;
 }
 
 interface DriveFile {
@@ -137,6 +158,53 @@ async function fetchAccessToken(jwt: string): Promise<string> {
 
   const data = (await response.json()) as GoogleTokenResponse;
   return data.access_token;
+}
+
+// ── Primary auth helper ───────────────────────────────────────────────────────
+
+/**
+ * Obtain a Google Drive access token from env bindings.
+ *
+ * Strategy:
+ *   - If GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN are
+ *     all present, exchange the refresh token for an access token via the
+ *     standard OAuth2 token endpoint.  Files will be owned by the user who
+ *     authorised the token (Ahmed's personal Drive), avoiding the service-
+ *     account storage-quota 403 error.
+ *   - Otherwise fall back to the Service Account JWT flow.
+ */
+async function getAccessToken(env: WebhookEnv): Promise<string> {
+  if (env.GOOGLE_REFRESH_TOKEN && env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: env.GOOGLE_CLIENT_ID,
+        client_secret: env.GOOGLE_CLIENT_SECRET,
+        refresh_token: env.GOOGLE_REFRESH_TOKEN,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    const data = (await response.json()) as OAuth2TokenResponse;
+
+    if (data.error) {
+      throw new Error(
+        `OAuth2 token refresh failed: ${data.error}${data.error_description ? ` — ${data.error_description}` : ''}`,
+      );
+    }
+
+    if (!data.access_token) {
+      throw new Error('OAuth2 token response did not contain an access_token');
+    }
+
+    console.log('[google-drive] Using OAuth2 refresh-token auth (personal Drive)');
+    return data.access_token;
+  }
+
+  // Fallback: service account JWT flow
+  console.log('[google-drive] Using Service Account JWT auth (fallback)');
+  return getAccessTokenFromJson(env.GOOGLE_SERVICE_ACCOUNT_JSON);
 }
 
 // ── Drive API calls ───────────────────────────────────────────────────────────
@@ -256,44 +324,31 @@ async function updateFile(
  * If a file with the same name already exists in the folder, its content is
  * replaced (PATCH). Otherwise a new file is created (POST).
  *
- * @param filename                - Target filename (e.g. "strategy-and-vision.md")
- * @param content                 - Markdown string to write
- * @param googleServiceAccountJson - Serialised service account JSON key
- * @param googleDriveFolderId     - Target Google Drive folder ID
+ * Authentication is delegated to `getAccessToken(env)`:
+ *   - OAuth2 refresh-token flow when GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET /
+ *     GOOGLE_REFRESH_TOKEN are all present (uploads to Ahmed's personal Drive).
+ *   - Service Account JWT flow otherwise.
+ *
+ * @param filename - Target filename (e.g. "strategy-and-vision.md")
+ * @param content  - Markdown string to write
+ * @param env      - Webhook env bindings (contains credentials + folder ID)
  */
 export async function uploadToDrive(
   filename: string,
   content: string,
-  googleServiceAccountJson: string,
-  googleDriveFolderId: string,
+  env: WebhookEnv,
 ): Promise<void> {
-  // Parse service account credentials
-  const parsed: unknown = JSON.parse(googleServiceAccountJson);
-  if (
-    typeof parsed !== 'object' ||
-    parsed === null ||
-    !('client_email' in parsed) ||
-    !('private_key' in parsed) ||
-    typeof (parsed as Record<string, unknown>)['client_email'] !== 'string' ||
-    typeof (parsed as Record<string, unknown>)['private_key'] !== 'string'
-  ) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is missing client_email or private_key');
-  }
-
-  const { client_email, private_key } = parsed as ServiceAccountKey;
-
-  // Obtain access token via Service Account JWT flow
-  const jwt = await buildServiceAccountJwt(client_email, private_key);
-  const accessToken = await fetchAccessToken(jwt);
+  const accessToken = await getAccessToken(env);
+  const folderId = env.GOOGLE_DRIVE_FOLDER_ID;
 
   // Check if file already exists in the target folder
-  const existingFileId = await findExistingFile(accessToken, filename, googleDriveFolderId);
+  const existingFileId = await findExistingFile(accessToken, filename, folderId);
 
   if (existingFileId !== null) {
     await updateFile(accessToken, existingFileId, content);
     console.log(`[google-drive] Updated existing file: ${filename} (id=${existingFileId})`);
   } else {
-    await createFile(accessToken, filename, content, googleDriveFolderId);
+    await createFile(accessToken, filename, content, folderId);
     console.log(`[google-drive] Created new file: ${filename}`);
   }
 }

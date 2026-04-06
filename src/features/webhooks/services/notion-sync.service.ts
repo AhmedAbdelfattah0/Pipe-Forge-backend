@@ -10,14 +10,16 @@
 import { fetchNotionPage, fetchNotionBlocks } from './notion-api.js';
 import { notionToMarkdown } from './notion-to-markdown.js';
 import { uploadToDrive } from './google-drive.js';
+import type { WebhookEnv } from '../../../config/env.js';
 
 /**
  * Credentials and config needed for one sync run.
  */
 export interface SyncConfig {
   readonly notionApiKey: string;
-  readonly googleServiceAccountJson: string;
-  readonly googleDriveFolderId: string;
+  /** Full WebhookEnv bindings — passed through to uploadToDrive so it can
+   *  select OAuth2 or Service Account auth automatically. */
+  readonly env: WebhookEnv;
 }
 
 /**
@@ -43,12 +45,7 @@ export async function syncNotionPageToDrive(
   console.log(`[notion-sync] Converted page to ${filename} (${markdown.length} chars)`);
 
   // 3. Upload to Google Drive (create or replace)
-  await uploadToDrive(
-    filename,
-    markdown,
-    config.googleServiceAccountJson,
-    config.googleDriveFolderId,
-  );
+  await uploadToDrive(filename, markdown, config.env);
 
   console.log(`[notion-sync] Sync complete for page ${pageId} → ${filename}`);
 }
