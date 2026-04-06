@@ -154,7 +154,7 @@ async function findExistingFile(
     `name = '${filename.replace(/'/g, "\\'")}' and '${folderId}' in parents and trashed = false`,
   );
   const fields = encodeURIComponent('files(id,name)');
-  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&spaces=drive`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&spaces=drive&supportsAllDrives=true&includeItemsFromAllDrives=true`;
 
   const response = await fetch(url, {
     method: 'GET',
@@ -199,7 +199,7 @@ async function createFile(
   ].join('\r\n');
 
   const response = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true',
     {
       method: 'POST',
       headers: {
@@ -225,7 +225,7 @@ async function updateFile(
   content: string,
 ): Promise<void> {
   const response = await fetch(
-    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
+    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`,
     {
       method: 'PATCH',
       headers: {
