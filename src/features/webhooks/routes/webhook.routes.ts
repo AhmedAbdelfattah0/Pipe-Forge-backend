@@ -123,7 +123,10 @@ export function webhookRoutes(): Hono<HonoEnv> {
       typeof (parsedForHandshake as Record<string, unknown>).verification_token === 'string'
     ) {
       const token = (parsedForHandshake as Record<string, unknown>).verification_token as string;
-      console.log('[webhook] Received verification handshake — responding with challenge');
+      console.log('=== NOTION VERIFICATION TOKEN ===');
+      console.log(token);
+      console.log('=================================');
+      console.log('Copy this token and paste it into Notion UI');
       return c.json({ challenge: token }, 200);
     }
 
