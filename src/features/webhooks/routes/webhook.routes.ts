@@ -107,6 +107,7 @@ export function webhookRoutes(): Hono<HonoEnv> {
     console.log('[test-drive] NOTION_API_KEY exists:', !!env.NOTION_API_KEY);
     console.log('[test-drive] GOOGLE_SA exists:', !!env.GOOGLE_SERVICE_ACCOUNT_JSON);
     console.log('[test-drive] FOLDER_ID exists:', !!env.GOOGLE_DRIVE_FOLDER_ID);
+    console.log('[test-drive] FOLDER_ID value:', env.GOOGLE_DRIVE_FOLDER_ID);
 
     if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_DRIVE_FOLDER_ID) {
       return c.json(
