@@ -87,14 +87,7 @@
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
+              "downloadInputs": []
             },
             "queueId": 0,
             "demands": [],
@@ -125,7 +118,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "npm list -g @azure/static-web-apps-cli 2>/dev/null || npm install -g @azure/static-web-apps-cli\n\nswa deploy \"$(System.DefaultWorkingDirectory)/{{combination.artifactAlias}}\" \\\n  --deployment-token $(SWA_TOKEN) \\\n  --env production",
@@ -152,7 +145,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceName": "{{config.serviceConnectionId}}",
+                "connectedServiceName": "",
                 "project": "{{config.adoProjectName}}",
                 "Pipeline": "Build",
                 "buildDefinition": "{{config.triggerPipelineId}}",
@@ -197,40 +190,8 @@
       "properties": {}
     }
   ],
-  "artifacts": [
-    {
-      "sourceId": "",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
+  "artifacts": [],
+  "triggers": [],
   "releaseNameFormat": "Release-$(rev:r)",
   "tags": [],
   "properties": {}

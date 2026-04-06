@@ -29,6 +29,7 @@ import { profileRoutes } from './features/profile/routes/profile.routes.js';
 import { adminRoutes } from './features/admin/routes/admin.routes.js';
 import { validatorRoutes } from './features/validator/routes/validator.routes.js';
 import { diagnoseRoutes } from './features/diagnose/routes/diagnose.routes.js';
+import { webhookRoutes } from './features/webhooks/routes/webhook.routes.js';
 
 type HonoEnv = {
   Bindings: Env;
@@ -129,6 +130,10 @@ app.route('/api/validator', validatorRoutes());
 app.use('/api/diagnose/*', authMiddleware);
 app.use('/api/diagnose', authMiddleware);
 app.route('/api/diagnose', diagnoseRoutes());
+
+// Webhooks — public endpoints verified internally via HMAC signature
+// No authMiddleware here: requests originate from Notion, not users.
+app.route('/webhooks', webhookRoutes());
 
 // ── Global error handler ──────────────────────────────────────────────────────
 app.onError((err, c) => {

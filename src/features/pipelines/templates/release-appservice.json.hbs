@@ -87,14 +87,7 @@
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
+              "downloadInputs": []
             },
             "queueId": 0,
             "demands": [],
@@ -126,7 +119,7 @@
               "condition": "succeeded()",
               "inputs": {
                 "ConnectionType": "AzureRM",
-                "ConnectedServiceName": "{{config.serviceConnectionId}}",
+                "ConnectedServiceName": "",
                 "PublishProfilePath": "$(System.DefaultWorkingDirectory)/**/*.pubxml",
                 "PublishProfilePassword": "",
                 "WebAppKind": "webApp",
@@ -173,7 +166,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceName": "{{config.serviceConnectionId}}",
+                "connectedServiceName": "",
                 "project": "{{config.adoProjectName}}",
                 "Pipeline": "Build",
                 "buildDefinition": "{{config.triggerPipelineId}}",
@@ -218,40 +211,8 @@
       "properties": {}
     }
   ],
-  "artifacts": [
-    {
-      "sourceId": "",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
+  "artifacts": [],
+  "triggers": [],
   "releaseNameFormat": "Release-$(rev:r)",
   "tags": [],
   "properties": {}

@@ -110,11 +110,46 @@ Each combination maps to one build pipeline and one release pipeline:
 1. Navigate to **Pipelines > Releases**.
 2. Click **New** > **Import release pipeline**.
 3. Upload the `release-*.json` file for the corresponding combination.
-4. After importing:
-   - Re-link the artifact source to the correct build pipeline.
-   - Verify service connection `{{config.serviceConnectionId}}` is accessible.
-   - Set any secret variable values (they are not exported in the JSON).
-5. Save and create a release to validate the configuration.
+4. Complete the required post-import steps below before saving.
+
+> **Why manual steps are required:** ADO release pipelines store artifacts and service connections by internal GUIDs that are project-specific. PipeForge cannot know these IDs at generation time, so they must be linked manually after import. The generated JSON is intentionally left with empty artifact and service connection fields to prevent import errors.
+
+---
+
+#### Post-Import Setup (required for every release pipeline)
+
+**Step 1 — Link the build artifact**
+
+1. In the imported release pipeline, click the **Artifacts** tab (or the **+ Add** button in the pipeline diagram).
+2. Click **Add an artifact**.
+3. Set **Source type** to `Build`.
+4. Set **Project** to `{{config.adoProjectName}}`.
+5. Set **Source (build pipeline)** to the matching build pipeline name (e.g. `{{combination.pipelineName}}`).
+6. Set **Default version** to `Latest`.
+7. Set **Source alias** to `_{{combination.pipelineName}}` (note the leading underscore).
+8. Click **Add**.
+
+**Step 2 — Enable the CD trigger**
+
+1. On the artifact you just linked, click the **lightning bolt icon** (Continuous deployment trigger).
+2. Toggle **Enabled**.
+3. Optionally add a branch filter (e.g. `{{config.qaBranch}}`).
+
+**Step 3 — Fix the service connection in each task**
+
+Each deploy task has a blank Azure subscription field. For every task in the **Agent job**:
+
+1. Click the task.
+2. In the **Azure subscription** (or **Azure Resource Manager connection**) field, select `{{config.serviceConnectionId}}` from the dropdown.
+3. If prompted to authorize, click **Authorize**.
+
+**Step 4 — Set secret variable values**
+
+Secret variables are not exported in the JSON. Go to **Variables** and set values for any variable marked as secret (e.g. `SWA_TOKEN`).
+
+**Step 5 — Save and validate**
+
+Click **Save**, then **Create release** to confirm the pipeline runs end-to-end.
 
 ---
 

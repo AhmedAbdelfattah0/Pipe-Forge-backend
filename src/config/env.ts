@@ -12,3 +12,18 @@ export interface Env {
   /** Gemini API key — used by the AI Error Diagnosis feature. */
   GEMINI_API_KEY: string;
 }
+
+/**
+ * Environment bindings required by the webhook feature.
+ * Extends Env so webhook routes can also access shared bindings.
+ */
+export interface WebhookEnv extends Env {
+  /** HMAC-SHA256 secret shared with Notion for webhook signature verification. */
+  NOTION_WEBHOOK_SECRET: string;
+  /** Notion integration token used to fetch page content. */
+  NOTION_API_KEY: string;
+  /** Full Google Service Account JSON key (stringified). */
+  GOOGLE_SERVICE_ACCOUNT_JSON: string;
+  /** Google Drive folder ID where Markdown files are uploaded. */
+  GOOGLE_DRIVE_FOLDER_ID: string;
+}

@@ -87,14 +87,7 @@
             },
             "skipArtifactsDownload": false,
             "artifactsDownloadInput": {
-              "downloadInputs": [
-                {
-                  "artifactItems": [],
-                  "alias": "{{combination.artifactAlias}}",
-                  "artifactType": "Build",
-                  "artifactDownloadMode": "All"
-                }
-              ]
+              "downloadInputs": []
             },
             "queueId": 0,
             "demands": [],
@@ -125,7 +118,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern '$(deploymentPath)/*'",
@@ -152,7 +145,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "az storage blob upload-batch --destination '$web/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
@@ -179,7 +172,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "az storage blob delete-batch --source '$web' --account-name $(storageAccountName) --pattern 'v/$(deploymentPath)/*'",
@@ -206,7 +199,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "az storage blob upload-batch --destination '$web/v/$(deploymentPath)' --source . --account-name $(storageAccountName) --overwrite true",
@@ -233,7 +226,7 @@
               "overrideInputs": {},
               "condition": "succeeded()",
               "inputs": {
-                "connectedServiceNameARM": "{{config.serviceConnectionId}}",
+                "connectedServiceNameARM": "",
                 "scriptType": "bash",
                 "scriptLocation": "inlineScript",
                 "inlineScript": "storageAccount=\"$(storageAccountName)\"\nsourceContainer=\"{{preserveSourceContainer}}\"\ndestinationContainer=\"{{preserveDestinationContainer}}\"\ndestinationFolder=\"{{preserveDestinationFolder}}\"\n\nblob_list=$(az storage blob list --account-name $storageAccount --container-name $sourceContainer --query \"[].name\" --auth-mode login -o tsv | tr -d '\\r')\n\nif [ -z \"$blob_list\" ]; then\n  echo \"No blobs found in '$sourceContainer'.\"\nelse\n  for blob in $blob_list; do\n    az storage blob copy start --account-name $storageAccount --source-container $sourceContainer --source-blob \"$blob\" --destination-container $destinationContainer --destination-blob \"$destinationFolder/$blob\" --auth-mode login\n  done\n  echo \"All files copied successfully.\"\nfi",
@@ -281,40 +274,8 @@
       "properties": {}
     }
   ],
-  "artifacts": [
-    {
-      "sourceId": "",
-      "type": "Build",
-      "alias": "{{combination.artifactAlias}}",
-      "definitionReference": {
-        "artifactSourceDefinitionUrl": {
-          "id": "",
-          "name": ""
-        },
-        "defaultVersionType": {
-          "id": "latestType",
-          "name": "Latest"
-        },
-        "definition": {
-          "id": "",
-          "name": "{{combination.pipelineName}}"
-        },
-        "project": {
-          "id": "",
-          "name": "{{config.adoProjectName}}"
-        }
-      },
-      "isPrimary": true,
-      "isRetained": false
-    }
-  ],
-  "triggers": [
-    {
-      "artifactAlias": "{{combination.artifactAlias}}",
-      "triggerConditions": [],
-      "triggerType": 1
-    }
-  ],
+  "artifacts": [],
+  "triggers": [],
   "releaseNameFormat": "Release-$(rev:r)",
   "tags": [],
   "properties": {}
