@@ -185,6 +185,59 @@ export function webhookRoutes(): Hono<HonoEnv> {
   });
 
   /**
+   * GET /webhooks/google-drive/share-folder?email=<email>
+   *
+   * Share the configured Google Drive folder with a specific user (writer role).
+   *
+   * Query params:
+   *   email — Google account email address to grant write access to
+   *
+   * Required env bindings:
+   *   GOOGLE_SERVICE_ACCOUNT_JSON — service account key
+   *   GOOGLE_DRIVE_FOLDER_ID      — target folder to share
+   *
+   * Returns: { success: true, email, folderId, message }
+   */
+  app.get('/google-drive/share-folder', async (c) => {
+    const env = c.env;
+
+    const email = c.req.query('email');
+    if (!email) {
+      return c.json({ success: false, error: 'Missing required query parameter: email' }, 400);
+    }
+
+    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_DRIVE_FOLDER_ID) {
+      return c.json(
+        { success: false, error: 'Missing GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_DRIVE_FOLDER_ID' },
+        500,
+      );
+    }
+
+    try {
+      await shareFolderWithUser(
+        env.GOOGLE_DRIVE_FOLDER_ID,
+        email,
+        'writer',
+        env.GOOGLE_SERVICE_ACCOUNT_JSON,
+      );
+      console.log(`[share-folder] Shared folder ${env.GOOGLE_DRIVE_FOLDER_ID} with ${email}`);
+      return c.json(
+        {
+          success: true,
+          email,
+          folderId: env.GOOGLE_DRIVE_FOLDER_ID,
+          message: 'Folder shared successfully',
+        },
+        200,
+      );
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('[share-folder] Failed:', error);
+      return c.json({ success: false, error }, 500);
+    }
+  });
+
+  /**
    * POST /webhooks/notion/setup-drive-folder
    *
    * One-time setup: create the "PipeForge HQ" Drive folder owned by the
