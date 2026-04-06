@@ -6,11 +6,12 @@
  * Mounted at: `/webhooks`
  *
  * Routes:
- *   POST /webhooks/notion — receives Notion change events
+ *   POST /webhooks/notion        — receives Notion change events
+ *   GET  /webhooks/notion/test-drive — verifies Google Drive connectivity
  *
  * Security:
- *   Every request is verified with an HMAC-SHA256 signature check against the
- *   `notion-signature` header using the NOTION_WEBHOOK_SECRET env binding.
+ *   Every POST request is verified with an HMAC-SHA256 signature check against
+ *   the `notion-signature` header using the NOTION_WEBHOOK_SECRET env binding.
  *   Invalid signatures → 401. Unknown page IDs → silent 200.
  *
  * Env bindings consumed (via c.env):
@@ -23,6 +24,7 @@
 import { Hono } from 'hono';
 import type { NotionWebhookPayload } from '../models/notion.model.js';
 import { syncNotionPageToDrive } from '../services/notion-sync.service.js';
+import { uploadToDrive } from '../services/google-drive.js';
 import type { WebhookEnv } from '../../../config/env.js';
 
 type HonoEnv = { Bindings: WebhookEnv };
@@ -94,12 +96,51 @@ export function webhookRoutes(): Hono<HonoEnv> {
   const app = new Hono<HonoEnv>();
 
   /**
+   * GET /webhooks/notion/test-drive
+   *
+   * Verifies Google Drive connectivity by uploading a test file.
+   * Logs env var presence and returns success/failure JSON.
+   */
+  app.get('/notion/test-drive', async (c) => {
+    const env = c.env;
+
+    console.log('[test-drive] NOTION_API_KEY exists:', !!env.NOTION_API_KEY);
+    console.log('[test-drive] GOOGLE_SA exists:', !!env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    console.log('[test-drive] FOLDER_ID exists:', !!env.GOOGLE_DRIVE_FOLDER_ID);
+
+    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_DRIVE_FOLDER_ID) {
+      return c.json(
+        { success: false, error: 'Missing GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_DRIVE_FOLDER_ID' },
+        500,
+      );
+    }
+
+    try {
+      const content = `# Test\nDrive connection works at ${new Date().toISOString()}`;
+      await uploadToDrive(
+        'test-connection.md',
+        content,
+        env.GOOGLE_SERVICE_ACCOUNT_JSON,
+        env.GOOGLE_DRIVE_FOLDER_ID,
+      );
+      console.log('[test-drive] Upload succeeded');
+      return c.json({ success: true }, 200);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('[test-drive] Upload failed:', error);
+      return c.json({ success: false, error }, 500);
+    }
+  });
+
+  /**
    * POST /webhooks/notion
    *
-   * 1. Verify HMAC signature → 401 if invalid
-   * 2. Parse body → extract page ID
-   * 3. Check allowed list → silent 200 if not in list
-   * 4. Sync the page to Google Drive
+   * 1. Handle Notion verification handshake (no signature present)
+   * 2. Verify HMAC signature → 401 if invalid
+   * 3. Parse body → extract page ID
+   * 4. Check allowed list → silent 200 if not in list
+   * 5. Return 200 immediately, run sync inside ctx.waitUntil() so Cloudflare
+   *    Workers does not kill the async task after the response is sent
    */
   app.post('/notion', async (c) => {
     const env = c.env;
@@ -129,6 +170,14 @@ export function webhookRoutes(): Hono<HonoEnv> {
       console.log('Copy this token and paste it into Notion UI');
       return c.json({ challenge: token }, 200);
     }
+
+    // ── Log env var presence ──────────────────────────────────────────────
+    console.log('NOTION_API_KEY exists:', !!env.NOTION_API_KEY);
+    console.log('GOOGLE_SA exists:', !!env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    console.log('FOLDER_ID exists:', !!env.GOOGLE_DRIVE_FOLDER_ID);
+
+    // ── Log incoming body ─────────────────────────────────────────────────
+    console.log('1. Webhook received:', new TextDecoder().decode(rawBody));
 
     // ── 2. Verify HMAC signature ──────────────────────────────────────────
     const signatureHeader = c.req.header('notion-signature') ?? '';
@@ -168,9 +217,13 @@ export function webhookRoutes(): Hono<HonoEnv> {
     }
 
     const pageId = normalisePageId(rawPageId);
+    console.log('2. Page ID:', pageId);
 
     // ── 4. Check allowed list ─────────────────────────────────────────────
-    if (!ALLOWED_PAGE_IDS.has(pageId)) {
+    const isAllowed = ALLOWED_PAGE_IDS.has(pageId);
+    console.log('3. In allowed list:', isAllowed);
+
+    if (!isAllowed) {
       console.log(`[webhook] Page ${pageId} not in allowed list — ignoring`);
       return c.json({ status: 'ok', message: 'Ignored' }, 200);
     }
@@ -183,21 +236,29 @@ export function webhookRoutes(): Hono<HonoEnv> {
       return c.json({ status: 'error', message: 'Server misconfiguration' }, 500);
     }
 
-    // ── 6. Sync page to Google Drive ──────────────────────────────────────
-    try {
-      await syncNotionPageToDrive(pageId, {
-        notionApiKey: NOTION_API_KEY,
-        googleServiceAccountJson: GOOGLE_SERVICE_ACCOUNT_JSON,
-        googleDriveFolderId: GOOGLE_DRIVE_FOLDER_ID,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[webhook] Sync failed for page ${pageId}:`, message);
-      // Return 500 so Notion retries the webhook delivery
-      return c.json({ status: 'error', message: 'Sync failed — will retry' }, 500);
-    }
+    // ── 6. Return 200 immediately; run sync inside waitUntil ──────────────
+    // Cloudflare Workers terminates async work that outlives the response.
+    // ctx.waitUntil() keeps the Worker alive until the Promise resolves.
+    const ctx = c.executionCtx;
 
-    return c.json({ status: 'ok', message: 'Synced' }, 200);
+    ctx.waitUntil(
+      (async () => {
+        try {
+          console.log('4. Fetching Notion page...');
+          await syncNotionPageToDrive(pageId, {
+            notionApiKey: NOTION_API_KEY,
+            googleServiceAccountJson: GOOGLE_SERVICE_ACCOUNT_JSON,
+            googleDriveFolderId: GOOGLE_DRIVE_FOLDER_ID,
+          });
+          console.log('8. Upload complete!');
+        } catch (err: unknown) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          console.error('ERROR:', error.message, error.stack);
+        }
+      })(),
+    );
+
+    return c.json({ status: 'ok', message: 'Accepted' }, 200);
   });
 
   return app;
