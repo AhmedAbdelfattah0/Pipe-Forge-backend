@@ -26,4 +26,10 @@ export interface WebhookEnv extends Env {
   GOOGLE_SERVICE_ACCOUNT_JSON: string;
   /** Google Drive folder ID where Markdown files are uploaded. */
   GOOGLE_DRIVE_FOLDER_ID: string;
+  /**
+   * Google account email to share the Drive folder with after service-account
+   * creation, so the owner can browse files and use them in NotebookLM.
+   * Optional — sharing is skipped if this binding is absent.
+   */
+  GOOGLE_OWNER_EMAIL?: string;
 }

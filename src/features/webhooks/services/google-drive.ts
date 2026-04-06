@@ -141,6 +141,12 @@ async function fetchAccessToken(jwt: string): Promise<string> {
 
 // ── Drive API calls ───────────────────────────────────────────────────────────
 
+interface DrivePermissionPayload {
+  readonly type: 'user' | 'group' | 'domain' | 'anyone';
+  readonly role: 'reader' | 'writer' | 'owner' | 'organizer' | 'fileOrganizer';
+  readonly emailAddress?: string;
+}
+
 /**
  * Search for an existing file by name within a specific Drive folder.
  * Returns the file ID if found, or null if not found.
@@ -290,4 +296,118 @@ export async function uploadToDrive(
     await createFile(accessToken, filename, content, googleDriveFolderId);
     console.log(`[google-drive] Created new file: ${filename}`);
   }
+}
+
+// ── Folder management ─────────────────────────────────────────────────────────
+
+/**
+ * Obtain a fresh Drive access token using the service account credentials
+ * embedded in a serialised JSON key string.
+ *
+ * Extracted as a shared helper so folder-management functions can reuse the
+ * same JWT → token exchange without duplicating credential parsing.
+ */
+async function getAccessTokenFromJson(googleServiceAccountJson: string): Promise<string> {
+  const parsed: unknown = JSON.parse(googleServiceAccountJson);
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    !('client_email' in parsed) ||
+    !('private_key' in parsed) ||
+    typeof (parsed as Record<string, unknown>)['client_email'] !== 'string' ||
+    typeof (parsed as Record<string, unknown>)['private_key'] !== 'string'
+  ) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is missing client_email or private_key');
+  }
+
+  const { client_email, private_key } = parsed as ServiceAccountKey;
+  const jwt = await buildServiceAccountJwt(client_email, private_key);
+  return fetchAccessToken(jwt);
+}
+
+/**
+ * Create a new Drive folder owned by the service account.
+ *
+ * Because the folder is owned by the service account (not a user account) it
+ * does not consume any user's storage quota, eliminating the 403 "Service
+ * Accounts do not have storage quota" error when uploading into user-owned
+ * folders.
+ *
+ * @param folderName              - Display name for the new folder
+ * @param googleServiceAccountJson - Serialised service account JSON key
+ * @returns The ID of the newly created folder
+ */
+export async function createRootFolder(
+  folderName: string,
+  googleServiceAccountJson: string,
+): Promise<string> {
+  const accessToken = await getAccessTokenFromJson(googleServiceAccountJson);
+
+  const metadata = {
+    name: folderName,
+    mimeType: 'application/vnd.google-apps.folder',
+  };
+
+  const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(metadata),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Drive folder creation failed (${response.status}): ${text}`);
+  }
+
+  const data = (await response.json()) as DriveFile;
+  console.log(`[google-drive] Created folder "${folderName}" (id=${data.id})`);
+  return data.id;
+}
+
+/**
+ * Share a Drive file or folder with a specific user.
+ *
+ * Call this after `createRootFolder` to give the owner's Google account
+ * access so they can browse files in Drive and use them with NotebookLM.
+ *
+ * @param fileId                  - Drive file or folder ID to share
+ * @param email                   - Email address of the recipient
+ * @param role                    - Permission level ('reader' | 'writer' | 'owner')
+ * @param googleServiceAccountJson - Serialised service account JSON key
+ */
+export async function shareFolderWithUser(
+  fileId: string,
+  email: string,
+  role: DrivePermissionPayload['role'],
+  googleServiceAccountJson: string,
+): Promise<void> {
+  const accessToken = await getAccessTokenFromJson(googleServiceAccountJson);
+
+  const permission: DrivePermissionPayload = {
+    type: 'user',
+    role,
+    emailAddress: email,
+  };
+
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(permission),
+    },
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Drive permission grant failed (${response.status}): ${text}`);
+  }
+
+  console.log(`[google-drive] Shared file/folder ${fileId} with ${email} (role=${role})`);
 }

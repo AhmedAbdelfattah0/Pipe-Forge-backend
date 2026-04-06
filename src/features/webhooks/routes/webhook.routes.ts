@@ -24,7 +24,7 @@
 import { Hono } from 'hono';
 import type { NotionWebhookPayload } from '../models/notion.model.js';
 import { syncNotionPageToDrive } from '../services/notion-sync.service.js';
-import { uploadToDrive } from '../services/google-drive.js';
+import { uploadToDrive, createRootFolder, shareFolderWithUser } from '../services/google-drive.js';
 import type { WebhookEnv } from '../../../config/env.js';
 
 type HonoEnv = { Bindings: WebhookEnv };
@@ -129,6 +129,115 @@ export function webhookRoutes(): Hono<HonoEnv> {
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : String(err);
       console.error('[test-drive] Upload failed:', error);
+      return c.json({ success: false, error }, 500);
+    }
+  });
+
+  /**
+   * GET /webhooks/google-drive/create-folder
+   *
+   * One-time utility: create a new Google Drive folder owned by the service
+   * account and (optionally) share it with GOOGLE_OWNER_EMAIL.
+   *
+   * Because the folder is owned by the service account it has no user-quota
+   * constraint, eliminating the 403 "Service Accounts do not have storage
+   * quota" error that occurs when uploading into a user-owned folder.
+   *
+   * Call this once, then:
+   *   1. Copy the returned folderId.
+   *   2. Run: npx wrangler secret put GOOGLE_DRIVE_FOLDER_ID
+   *   3. Paste the new folder ID when prompted.
+   *   4. Share the folder with your Google account in the Drive UI (if
+   *      GOOGLE_OWNER_EMAIL was not set) so NotebookLM can see the files.
+   */
+  app.get('/google-drive/create-folder', async (c) => {
+    const env = c.env;
+
+    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+      return c.json({ success: false, error: 'Missing GOOGLE_SERVICE_ACCOUNT_JSON' }, 500);
+    }
+
+    try {
+      const folderId = await createRootFolder('PipeForge HQ', env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+      const ownerEmail = env.GOOGLE_OWNER_EMAIL;
+      if (ownerEmail) {
+        await shareFolderWithUser(folderId, ownerEmail, 'writer', env.GOOGLE_SERVICE_ACCOUNT_JSON);
+        console.log(`[create-folder] Shared folder ${folderId} with ${ownerEmail}`);
+      } else {
+        console.warn('[create-folder] GOOGLE_OWNER_EMAIL not set — folder created but not shared');
+      }
+
+      return c.json(
+        {
+          success: true,
+          folderId,
+          message: `Folder created. Run: npx wrangler secret put GOOGLE_DRIVE_FOLDER_ID and paste ${folderId}`,
+          sharedWith: ownerEmail ?? null,
+        },
+        200,
+      );
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('[create-folder] Failed:', error);
+      return c.json({ success: false, error }, 500);
+    }
+  });
+
+  /**
+   * POST /webhooks/notion/setup-drive-folder
+   *
+   * One-time setup: create the "PipeForge HQ" Drive folder owned by the
+   * service account and share it with the owner's Google account so they can
+   * browse files in Drive and use them with NotebookLM.
+   *
+   * Why service-account ownership matters:
+   *   Service accounts cannot upload into folders owned by a user account —
+   *   they have no user storage quota, causing a 403 "Service Accounts do not
+   *   have storage quota" error. Creating the folder FROM the service account
+   *   means the service account owns the quota and uploads succeed.
+   *
+   * Idempotency: this route always creates a new folder. After running it,
+   * update the GOOGLE_DRIVE_FOLDER_ID secret with the returned folder ID.
+   *
+   * Required env bindings:
+   *   GOOGLE_SERVICE_ACCOUNT_JSON — service account key
+   *   GOOGLE_OWNER_EMAIL          — Google account to share the folder with (optional)
+   */
+  app.post('/notion/setup-drive-folder', async (c) => {
+    const env = c.env;
+
+    if (!env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+      return c.json({ success: false, error: 'Missing GOOGLE_SERVICE_ACCOUNT_JSON' }, 500);
+    }
+
+    try {
+      // Step 1: create folder owned by service account
+      const folderId = await createRootFolder('PipeForge HQ', env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+      // Step 2: share with the owner's Google account if env var is present
+      const ownerEmail = env.GOOGLE_OWNER_EMAIL;
+      if (ownerEmail) {
+        await shareFolderWithUser(folderId, ownerEmail, 'writer', env.GOOGLE_SERVICE_ACCOUNT_JSON);
+        console.log(`[setup-drive-folder] Shared folder ${folderId} with ${ownerEmail}`);
+      } else {
+        console.warn(
+          '[setup-drive-folder] GOOGLE_OWNER_EMAIL not set — folder created but not shared',
+        );
+      }
+
+      return c.json(
+        {
+          success: true,
+          folderId,
+          message: `Folder created (id=${folderId}). Set GOOGLE_DRIVE_FOLDER_ID=${folderId} in your Cloudflare Worker secrets.`,
+          sharedWith: ownerEmail ?? null,
+        },
+        200,
+      );
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('[setup-drive-folder] Failed:', error);
       return c.json({ success: false, error }, 500);
     }
   });
