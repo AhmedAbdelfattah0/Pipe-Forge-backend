@@ -107,6 +107,26 @@ export function webhookRoutes(): Hono<HonoEnv> {
     // ── 1. Read raw body for signature verification ───────────────────────
     const rawBody = await c.req.arrayBuffer();
 
+    // ── 1a. Handle Notion verification handshake (no signature present) ───
+    // Notion sends a verification_token on initial registration — respond
+    // immediately before any HMAC check, as no signature is provided.
+    let parsedForHandshake: unknown;
+    try {
+      parsedForHandshake = JSON.parse(new TextDecoder().decode(rawBody));
+    } catch {
+      parsedForHandshake = null;
+    }
+    if (
+      parsedForHandshake !== null &&
+      typeof parsedForHandshake === 'object' &&
+      'verification_token' in parsedForHandshake &&
+      typeof (parsedForHandshake as Record<string, unknown>).verification_token === 'string'
+    ) {
+      const token = (parsedForHandshake as Record<string, unknown>).verification_token as string;
+      console.log('[webhook] Received verification handshake — responding with challenge');
+      return c.json({ challenge: token }, 200);
+    }
+
     // ── 2. Verify HMAC signature ──────────────────────────────────────────
     const signatureHeader = c.req.header('notion-signature') ?? '';
 
